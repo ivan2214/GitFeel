@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -31,7 +30,8 @@ export const ImageWithSkeleton: React.FC<ImageWithSkeletonProps> = ({ src, alt, 
 					}}
 				/>
 			)}
-			<Image
+			{/** biome-ignore lint/performance/noImgElement: <explanation> */}
+			<img
 				alt={alt}
 				className={cn("h-full w-full transition-opacity duration-300", className, isLoading && "opacity-0")}
 				loading={priority ? "eager" : "lazy"}

@@ -1,15 +1,16 @@
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar, GitCommit, Github, LinkIcon, MapPin, Twitter } from "lucide-react";
-import { headers } from "next/headers";
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CommitCard } from "@/components/commit-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getCurrentUser } from "@/data/user";
 import { toggleFollow } from "@/lib/actions/users";
-import { auth } from "@/lib/auth";
+
 import prisma from "@/lib/prisma";
 
 interface DevProfilePageProps {
@@ -94,9 +95,7 @@ export async function generateMetadata({ params }: DevProfilePageProps) {
 }
 
 export default async function DevProfilePage({ params }: DevProfilePageProps) {
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	});
+	const currentUser = await getCurrentUser();
 
 	const user = await getUser((await params).id);
 
@@ -104,8 +103,8 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 		notFound();
 	}
 
-	const isOwnProfile = session?.user?.id === user.id;
-	const isFollowing = session?.user ? await checkIfFollowing(session.user.id, user.id) : false;
+	const isOwnProfile = currentUser?.id === user.id;
+	const isFollowing = currentUser ? await checkIfFollowing(currentUser.id, user.id) : false;
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -143,7 +142,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 										</div>
 									</div>
 
-									{!isOwnProfile && session?.user && (
+									{!isOwnProfile && currentUser && (
 										<form
 											action={async () => {
 												await toggleFollow(user.id);
@@ -235,7 +234,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 
 						<div className="space-y-4">
 							{user.commits.map((commit) => (
-								<CommitCard _currentUserId={session?.user?.id} commit={commit} key={commit.id} />
+								<CommitCard commit={commit} key={commit.id} user={currentUser} />
 							))}
 						</div>
 

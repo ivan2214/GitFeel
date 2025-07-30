@@ -1,8 +1,9 @@
-import { Hash, TrendingUp } from "lucide-react";
+import { Hash, TrendingUp, Users } from "lucide-react";
 import Link from "next/link";
-import { CommitCard } from "@/components/commit-card";
-import { CommitComposer } from "@/components/commit-composer";
+import { GitfeelCommit } from "@/components/gitfeel-commit";
+import { GitfeelComposer } from "@/components/gitfeel-composer";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrentUser } from "@/data/user";
 import prisma from "@/lib/prisma";
@@ -70,7 +71,7 @@ async function getActiveUsers() {
 }
 
 export default async function HomePage() {
-	const currentUser = await getCurrentUser();
+	const user = await getCurrentUser();
 
 	const [commits, trendingTags, activeUsers] = await Promise.all([getCommits(), getTrendingTags(), getActiveUsers()]);
 
@@ -80,17 +81,17 @@ export default async function HomePage() {
 				<div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
 					{/* Main Feed */}
 					<div className="space-y-6 lg:col-span-2">
-						<CommitComposer />
+						<GitfeelComposer user={user} />
 
 						<div className="space-y-4">
 							{commits.map((commit) => (
-								<CommitCard _currentUserId={currentUser?.id} commit={commit} key={commit.id} />
+								<GitfeelCommit commit={commit} key={commit.id} user={user} />
 							))}
 						</div>
 
 						{commits.length === 0 && (
-							<Card>
-								<CardContent className="p-12 text-center">
+							<Card className="border-gray-700 bg-gray-800">
+								<CardContent className="p-12 text-center text-white">
 									<p className="text-muted-foreground">No hay commits aún. ¡Sé el primero en compartir!</p>
 								</CardContent>
 							</Card>
@@ -99,10 +100,32 @@ export default async function HomePage() {
 
 					{/* Sidebar */}
 					<div className="space-y-6">
+						{!user && (
+							<Card className="border-gray-700 bg-gray-800">
+								<CardHeader>
+									<CardTitle className="flex items-center gap-2 text-white">
+										<Users className="h-5 w-5" />
+										Únete a gitfeel
+									</CardTitle>
+								</CardHeader>
+								<CardContent className="space-y-3">
+									<p className="text-muted-foreground text-sm">Comparte tus frustraciones, logros y dudas de programación</p>
+									<div className="space-y-2">
+										<Button asChild className="w-full">
+											<Link href="/auth/signin">Iniciar Sesión</Link>
+										</Button>
+										<Button asChild className="w-full bg-transparent" variant="outline">
+											<Link href="/auth/signup">Registrarse</Link>
+										</Button>
+									</div>
+								</CardContent>
+							</Card>
+						)}
+
 						{/* Trending Tags */}
-						<Card>
+						<Card className="border-gray-700 bg-gray-800">
 							<CardHeader>
-								<CardTitle className="flex items-center gap-2">
+								<CardTitle className="flex items-center gap-2 text-white">
 									<Hash className="h-5 w-5" />
 									Tags Trending
 								</CardTitle>
@@ -122,9 +145,9 @@ export default async function HomePage() {
 						</Card>
 
 						{/* Active Developers */}
-						<Card>
+						<Card className="border-gray-700 bg-gray-800">
 							<CardHeader>
-								<CardTitle className="flex items-center gap-2">
+								<CardTitle className="flex items-center gap-2 text-white">
 									<TrendingUp className="h-5 w-5" />
 									Developers Activos
 								</CardTitle>
@@ -140,7 +163,7 @@ export default async function HomePage() {
 											{user.name?.charAt(0).toUpperCase()}
 										</div>
 										<div className="min-w-0 flex-1">
-											<p className="truncate font-medium">{user.name}</p>
+											<p className="truncate font-medium text-white">{user.name}</p>
 											<p className="text-muted-foreground text-sm">{user._count.commits} commits</p>
 										</div>
 									</Link>

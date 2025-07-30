@@ -117,6 +117,9 @@
 		@apply border-border outline-ring/50;
 	}
 	body {
+		font-feature-settings:
+			"rlig" 1,
+			"calt" 1;
 		@apply bg-background text-foreground;
 	}
 }
@@ -125,4 +128,46 @@
 	.text-balance {
 		text-wrap: balance;
 	}
+}
+
+/* Gitfeel custom styles */
+.gitfeel-gradient {
+	background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%);
+}
+
+.commit-card {
+	@apply bg-card border border-border rounded-xl overflow-hidden transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5;
+}
+
+.commit-header {
+	@apply bg-muted/30 px-4 py-2 border-b border-border flex items-center gap-2 text-xs text-muted-foreground;
+}
+
+.commit-content {
+	@apply p-4;
+}
+
+.code-block {
+	@apply bg-slate-900 border border-slate-700 rounded-lg p-4 font-mono text-sm;
+}
+
+.gitfeel-button {
+	@apply bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium px-4 py-2 rounded-lg transition-all duration-200;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+	width: 6px;
+}
+
+::-webkit-scrollbar-track {
+	@apply bg-muted;
+}
+
+::-webkit-scrollbar-thumb {
+	@apply bg-primary/50 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	@apply bg-primary/70;
 }

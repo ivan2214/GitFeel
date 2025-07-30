@@ -19,12 +19,12 @@ export const metadata = createMetadata({
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="es">
+		<html lang="es" suppressHydrationWarning>
 			<body className={inter.className}>
-				<ThemeProvider>
+				<ThemeProvider attribute="class" defaultTheme="system" disableTransitionOnChange enableSystem>
 					<NavbarWrapper />
 					{children}
-					<Toaster />
+					<Toaster position="top-right" richColors />
 				</ThemeProvider>
 			</body>
 		</html>

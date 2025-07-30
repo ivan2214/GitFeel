@@ -16,16 +16,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAction } from "@/hooks/use-action";
 import { createFork, toggleStar, toggleStash } from "@/lib/actions/commits";
 import { useSession } from "@/lib/auth-client";
-import type { CommitWithDetails } from "@/lib/types";
+import type { CommitWithDetails, User } from "@/lib/types";
+import { ImageWithSkeleton } from "./image-with-skeleton";
 
 interface CommitCardProps {
 	commit: CommitWithDetails;
-	_currentUserId?: string;
 	showActions?: boolean;
+	user: User | null;
 }
 
-export function CommitCard({ commit, _currentUserId, showActions = true }: CommitCardProps) {
-	const { data: session } = useSession();
+export function CommitCard({ commit, user, showActions = true }: CommitCardProps) {
 	const [forkContent, setForkContent] = useState("");
 	const [showForkDialog, setShowForkDialog] = useState(false);
 
@@ -95,7 +95,7 @@ export function CommitCard({ commit, _currentUserId, showActions = true }: Commi
 
 						{commit.imageUrl && (
 							<Link className="block" href={`/commits/${commit.id}`}>
-								<Image
+								<ImageWithSkeleton
 									alt="Commit image"
 									className="h-auto max-w-full rounded-lg border transition-opacity hover:opacity-90"
 									src={commit.imageUrl || "/placeholder.svg"}
@@ -130,7 +130,7 @@ export function CommitCard({ commit, _currentUserId, showActions = true }: Commi
 										className={`flex items-center gap-2 ${
 											isStarred ? "text-yellow-500" : "text-muted-foreground hover:text-yellow-500"
 										} transition-colors`}
-										disabled={starPending || !session?.user}
+										disabled={starPending || !user}
 										onClick={() => {
 											startTransition(() => {
 												executeStar(commit.id);
@@ -147,7 +147,7 @@ export function CommitCard({ commit, _currentUserId, showActions = true }: Commi
 										<DialogTrigger asChild>
 											<Button
 												className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-green-500"
-												disabled={!session?.user}
+												disabled={!user}
 												size="sm"
 												variant="ghost"
 											>
@@ -193,7 +193,7 @@ export function CommitCard({ commit, _currentUserId, showActions = true }: Commi
 										className={`flex items-center gap-2 ${
 											isStashed ? "text-blue-500" : "text-muted-foreground hover:text-blue-500"
 										} transition-colors`}
-										disabled={stashPending || !session?.user}
+										disabled={stashPending || !user}
 										onClick={() => {
 											startTransition(() => {
 												executeStash(commit.id);
@@ -206,7 +206,7 @@ export function CommitCard({ commit, _currentUserId, showActions = true }: Commi
 									</Button>
 								</div>
 
-								{session?.user && (
+								{user && (
 									<DropdownMenu>
 										<DropdownMenuTrigger asChild>
 											<Button size="sm" variant="ghost">
@@ -215,7 +215,7 @@ export function CommitCard({ commit, _currentUserId, showActions = true }: Commi
 										</DropdownMenuTrigger>
 										<DropdownMenuContent align="end">
 											<DropdownMenuItem>Reportar commit</DropdownMenuItem>
-											{session.user.id === commit.authorId && (
+											{user.id === commit.authorId && (
 												<>
 													<DropdownMenuItem>Editar commit</DropdownMenuItem>
 													<DropdownMenuItem className="text-red-600">Eliminar commit</DropdownMenuItem>

@@ -1,15 +1,14 @@
 import { Filter, Search } from "lucide-react";
-import { headers } from "next/headers";
 import Link from "next/link";
-import { CommitCard } from "@/components/commit-card";
+import type { Prisma } from "@/app/generated/prisma/index";
+import { TerminalCommit } from "@/components/terminal-commit";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { auth } from "@/lib/auth";
+import { getCurrentUser } from "@/data/user";
 import prisma from "@/lib/prisma";
-import type { Prisma } from "../generated/prisma.ts";
 
 interface CommitsPageProps {
 	searchParams: {
@@ -85,23 +84,21 @@ async function getAllTags() {
 }
 
 export default async function CommitsPage({ searchParams }: CommitsPageProps) {
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	});
+	const user = await getCurrentUser();
 
 	const [commits, allTags] = await Promise.all([getCommits(searchParams.tags, searchParams.query), getAllTags()]);
 
 	const activeTags = searchParams.tags?.split(",").map((tag) => tag.trim()) || [];
 
 	return (
-		<div className="min-h-screen bg-background">
+		<div className="min-h-screen bg-gray-900">
 			<div className="container mx-auto px-4 py-8">
 				<div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
 					{/* Filters Sidebar */}
 					<div className="space-y-6">
-						<Card>
+						<Card className="border-gray-700 bg-gray-800">
 							<CardContent className="p-6">
-								<h2 className="mb-4 flex items-center gap-2 font-semibold">
+								<h2 className="mb-4 flex items-center gap-2 font-semibold text-white">
 									<Filter className="h-4 w-4" />
 									Filtros
 								</h2>
@@ -150,7 +147,7 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 
 						{/* Active Filters */}
 						{(activeTags.length > 0 || searchParams.query) && (
-							<Card>
+							<Card className="border-gray-700 bg-gray-800">
 								<CardContent className="p-4">
 									<div className="flex flex-wrap items-center gap-2">
 										<span className="font-medium text-sm">Filtros activos:</span>
@@ -184,12 +181,12 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 						{/* Commits List */}
 						<div className="space-y-4">
 							{commits.map((commit) => (
-								<CommitCard commit={commit} currentUserId={session?.user?.id} key={commit.id} />
+								<TerminalCommit _currentUserId={user?.id} commit={commit} key={commit.id} />
 							))}
 						</div>
 
 						{commits.length === 0 && (
-							<Card>
+							<Card className="border-gray-700 bg-gray-800">
 								<CardContent className="p-12 text-center">
 									<p className="text-muted-foreground">No se encontraron commits con estos filtros.</p>
 									<Button asChild className="mt-4">

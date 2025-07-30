@@ -4,14 +4,13 @@ import { ArrowLeft, MessageCircle } from "lucide-react";
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CommitCard } from "@/components/commit-card";
+import { GitfeelCommit } from "@/components/gitfeel-commit";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { getCurrentUser } from "@/data/user";
 import { createPatch } from "@/lib/actions/patches";
-
 import prisma from "@/lib/prisma";
 
 interface CommitDetailPageProps {
@@ -86,7 +85,7 @@ export default async function CommitDetailPage({ params }: CommitDetailPageProps
 	}
 
 	return (
-		<div className="min-h-screen bg-background">
+		<div className="min-h-screen bg-gray-900">
 			<div className="container mx-auto max-w-2xl px-4 py-8">
 				<div className="space-y-6">
 					{/* Updated Back Button */}
@@ -100,12 +99,12 @@ export default async function CommitDetailPage({ params }: CommitDetailPageProps
 					</div>
 
 					{/* Main Commit */}
-					<CommitCard _currentUserId={user?.id} commit={commit} />
+					<GitfeelCommit commit={commit} user={user} />
 
 					{/* Patches (Comments) Section */}
-					<Card>
+					<Card className="border-gray-700 bg-gray-800">
 						<CardHeader>
-							<CardTitle className="flex items-center gap-2">
+							<CardTitle className="flex items-center gap-2 text-white">
 								<MessageCircle className="h-5 w-5" />
 								Patches ({commit._count.patches})
 							</CardTitle>
@@ -127,7 +126,12 @@ export default async function CommitDetailPage({ params }: CommitDetailPageProps
 											<AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
 										</Avatar>
 										<div className="flex-1">
-											<Textarea className="min-h-[80px]" name="content" placeholder="Escribe tu patch..." required />
+											<Textarea
+												className="min-h-[80px] border-gray-700 bg-gray-800 text-white"
+												name="content"
+												placeholder="Escribe tu patch..."
+												required
+											/>
 											<div className="mt-2 flex justify-end">
 												<Button size="sm" type="submit">
 													Enviar Patch
@@ -150,7 +154,7 @@ export default async function CommitDetailPage({ params }: CommitDetailPageProps
 										</Link>
 										<div className="flex-1 space-y-1">
 											<div className="flex items-center gap-2">
-												<Link className="font-medium hover:underline" href={`/dev/${patch.author.id}`}>
+												<Link className="font-medium text-white hover:underline" href={`/dev/${patch.author.id}`}>
 													{patch.author.name}
 												</Link>
 												<span className="text-muted-foreground text-sm">
@@ -160,7 +164,7 @@ export default async function CommitDetailPage({ params }: CommitDetailPageProps
 													})}
 												</span>
 											</div>
-											<p className="text-sm">{patch.content}</p>
+											<p className="text-sm text-white">{patch.content}</p>
 										</div>
 									</div>
 								))}
@@ -168,7 +172,7 @@ export default async function CommitDetailPage({ params }: CommitDetailPageProps
 								{commit.patches.length === 0 && (
 									<div className="py-8 text-center text-muted-foreground">
 										<MessageCircle className="mx-auto mb-4 h-12 w-12 opacity-50" />
-										<p>No hay patches aún. ¡Sé el primero en comentar!</p>
+										<p className="text-white">No hay patches aún. ¡Sé el primero en comentar!</p>
 									</div>
 								)}
 							</div>

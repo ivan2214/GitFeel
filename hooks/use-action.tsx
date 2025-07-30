@@ -25,6 +25,7 @@ export function useAction<TInput, TState extends ActionResult>(
 
 	const [state, execute, pending] = useActionState<TState, TInput>(action, initialState);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		if (options.showToasts !== false) {
 			if (state.errorMessage) toast.error(state.errorMessage);
@@ -42,7 +43,7 @@ export function useAction<TInput, TState extends ActionResult>(
 		if (state.errorMessage && options.onError) {
 			options.onError(state);
 		}
-	}, [state, options.onError, options.onSuccess, options.redirectTo, options.showToasts, router.push]);
+	}, [state]);
 
 	return { state, execute, pending };
 }
