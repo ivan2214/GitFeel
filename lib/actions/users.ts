@@ -7,7 +7,7 @@ import prisma from "@/lib/prisma";
 import type { ToggleFollowState, UpdateProfileState } from "@/lib/types";
 import { createNotification } from "./notifications"; // Import notification action
 
-export async function updateProfile(_prevState: UpdateProfileState, formData: FormData): Promise<UpdateProfileState> {
+export async function updateProfile(formData: FormData): Promise<UpdateProfileState> {
 	try {
 		const session = await auth.api.getSession({
 			headers: await headers(),

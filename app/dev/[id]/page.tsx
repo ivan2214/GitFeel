@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { getCurrentUser } from "@/data/user";
 import { toggleFollow } from "@/lib/actions/users";
 import prisma from "@/lib/prisma";
+import type { CommitWithDetails, ForkWithDetails } from "@/lib/types";
 
 interface DevProfilePageProps {
 	params: Promise<{
@@ -55,6 +56,8 @@ async function getUser(id: string) {
 		},
 	});
 }
+
+type DataAllPosts = CommitWithDetails | ForkWithDetails;
 
 async function checkIfFollowing(currentUserId: string, targetUserId: string) {
 	const follow = await prisma.follow.findUnique({
@@ -103,8 +106,52 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 		notFound();
 	}
 
+	const forks = await prisma.fork.findMany({
+		where: {
+			userId: (await params).id,
+		},
+		include: {
+			user: true,
+			commit: {
+				include: {
+					author: true,
+					tags: {
+						include: {
+							tag: true,
+						},
+					},
+					_count: {
+						select: {
+							patches: true,
+							stars: true,
+							stashes: true,
+							forks: true,
+						},
+					},
+				},
+			},
+		},
+		orderBy: { createdAt: "desc" },
+	});
+
 	const isOwnProfile = currentUser?.id === user.id;
 	const isFollowing = currentUser ? await checkIfFollowing(currentUser.id, user.id) : false;
+
+	const allPosts: {
+		type: "commit" | "fork";
+		data: DataAllPosts;
+		createdAt: Date;
+	}[] = [];
+
+	user.commits.forEach((commit) => {
+		allPosts.push({ type: "commit", data: commit, createdAt: commit.createdAt });
+	});
+
+	forks.forEach((fork) => {
+		allPosts.push({ type: "fork", data: fork, createdAt: fork.createdAt });
+	});
+
+	allPosts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -265,12 +312,25 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 						</Card>
 
 						<div className="space-y-4">
-							{user.commits.map((commit) => (
-								<GitfeelCommit commit={commit} key={commit.id} user={user} />
+							{allPosts.map((post, index) => (
+								<div key={`${post.type}-${post.data.id}-${index}`}>
+									{post.type === "commit" ? (
+										<GitfeelCommit commit={post.data as CommitWithDetails} user={user} />
+									) : (
+										<GitfeelCommit
+											commit={(post.data as ForkWithDetails).commit}
+											forkContent={(post.data as ForkWithDetails).content}
+											forkDate={new Date(post.data.createdAt)}
+											forkUser={(post.data as ForkWithDetails).user}
+											isFork={true}
+											user={user}
+										/>
+									)}
+								</div>
 							))}
 						</div>
 
-						{user.commits.length === 0 && (
+						{allPosts.length === 0 && (
 							<Card className="commit-card">
 								<CardContent className="p-12 text-center">
 									<div className="code-block mb-4">
