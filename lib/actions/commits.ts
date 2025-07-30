@@ -4,9 +4,10 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import type { Prisma } from "@/app/generated/prisma";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import type { CreateCommitState, CreateForkState, ToggleStarState, ToggleStashState } from "@/lib/types";
+import type { CommitWithDetails, CreateCommitState, CreateForkState, Fork, ToggleStarState, ToggleStashState } from "@/lib/types";
 
 const google = createGoogleGenerativeAI({
 	// custom settings
@@ -252,4 +253,187 @@ export async function createFork(
 		console.error("Error creating fork:", error);
 		return { errorMessage: "Error al forkear el commit" };
 	}
+}
+
+// Nueva función para obtener commits con forks
+export async function getCommitsWithForks(options: {
+	tags?: string[];
+	query?: string;
+	sortBy?: "recent" | "popular" | "stars" | "forks";
+	limit?: number;
+	offset?: number;
+}): Promise<{
+	commits: CommitWithDetails[];
+	forks: Fork<{
+		include: {
+			user: true;
+			commit: {
+				include: {
+					author: true;
+					tags: {
+						include: {
+							tag: true;
+						};
+					};
+					_count: {
+						select: {
+							patches: true;
+							stars: true;
+							stashes: true;
+							forks: true;
+						};
+					};
+				};
+			};
+		};
+	}>[];
+}> {
+	const { tags, query, sortBy = "recent", limit = 20, offset = 0 } = options;
+
+	const where: Prisma.CommitWhereInput = {};
+
+	if (tags && tags.length > 0) {
+		where.OR = [
+			{
+				tags: {
+					some: {
+						tag: {
+							name: {
+								in: tags,
+							},
+						},
+					},
+				},
+			},
+			{
+				forks: {
+					some: {
+						commit: {
+							tags: {
+								some: {
+									tag: {
+										name: {
+											in: tags,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		];
+	}
+
+	if (query) {
+		const searchCondition = {
+			content: {
+				contains: query,
+				mode: "insensitive" as const,
+			},
+		};
+
+		if (where.OR) {
+			where.AND = [
+				{ OR: where.OR },
+				{
+					OR: [
+						searchCondition,
+						{
+							forks: {
+								some: searchCondition,
+							},
+						},
+					],
+				},
+			];
+			delete where.OR;
+		} else {
+			where.OR = [
+				searchCondition,
+				{
+					forks: {
+						some: searchCondition,
+					},
+				},
+			];
+		}
+	}
+
+	let orderBy: Prisma.CommitOrderByWithRelationInput | Prisma.CommitOrderByWithRelationInput[];
+
+	switch (sortBy) {
+		case "recent":
+			orderBy = { createdAt: "desc" };
+			break;
+		case "popular":
+			orderBy = [{ stars: { _count: "desc" } }, { forks: { _count: "desc" } }, { patches: { _count: "desc" } }];
+			break;
+		case "stars":
+			orderBy = { stars: { _count: "desc" } };
+			break;
+		case "forks":
+			orderBy = { forks: { _count: "desc" } };
+			break;
+		default:
+			orderBy = { createdAt: "desc" };
+			break;
+	}
+
+	// Get original commits
+	const commits = await prisma.commit.findMany({
+		where,
+		include: {
+			author: true,
+			tags: {
+				include: {
+					tag: true,
+				},
+			},
+			_count: {
+				select: {
+					patches: true,
+					stars: true,
+					stashes: true,
+					forks: true,
+				},
+			},
+		},
+		orderBy,
+		take: limit,
+		skip: offset,
+	});
+
+	// Get forks as separate posts
+	const forks = await prisma.fork.findMany({
+		where: {
+			commit: where,
+		},
+		include: {
+			user: true,
+			commit: {
+				include: {
+					author: true,
+					tags: {
+						include: {
+							tag: true,
+						},
+					},
+					_count: {
+						select: {
+							patches: true,
+							stars: true,
+							stashes: true,
+							forks: true,
+						},
+					},
+				},
+			},
+		},
+		orderBy: { createdAt: "desc" },
+		take: limit,
+		skip: offset,
+	});
+
+	return { commits, forks };
 }

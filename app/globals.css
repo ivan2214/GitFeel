@@ -138,6 +138,9 @@
 .commit-card {
 	@apply bg-card border border-border rounded-xl overflow-hidden transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5;
 }
+.commit-card-fork {
+	@apply bg-card border border-purple-600 rounded-xl overflow-hidden transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5;
+}
 
 .commit-header {
 	@apply bg-muted/30 px-4 py-2 border-b border-border flex items-center gap-2 text-xs text-muted-foreground;

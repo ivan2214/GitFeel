@@ -4,34 +4,11 @@ import { GitfeelCommit } from "@/components/gitfeel-commit";
 import { GitfeelComposer } from "@/components/gitfeel-composer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { getCurrentUser } from "@/data/user";
+import { getCommitsWithForks } from "@/lib/actions/commits";
 import prisma from "@/lib/prisma";
-
-async function getCommits() {
-	return await prisma.commit.findMany({
-		include: {
-			author: true,
-			tags: {
-				include: {
-					tag: true,
-				},
-			},
-			_count: {
-				select: {
-					patches: true,
-					stars: true,
-					stashes: true,
-					forks: true,
-				},
-			},
-		},
-		orderBy: {
-			createdAt: "desc",
-		},
-		take: 20,
-	});
-}
+import type { CommitWithDetails, ForkWithDetails } from "@/lib/types";
 
 async function getTrendingTags() {
 	return await prisma.tag.findMany({
@@ -70,10 +47,36 @@ async function getActiveUsers() {
 	});
 }
 
+type DataAllPosts = CommitWithDetails | ForkWithDetails;
+
 export default async function HomePage() {
 	const user = await getCurrentUser();
 
-	const [commits, trendingTags, activeUsers] = await Promise.all([getCommits(), getTrendingTags(), getActiveUsers()]);
+	const { commits, forks } = await getCommitsWithForks({
+		sortBy: "recent",
+		limit: 20,
+		offset: 0,
+	});
+
+	const [trendingTags, activeUsers] = await Promise.all([getTrendingTags(), getActiveUsers()]);
+
+	// Combine and sort commits and forks
+
+	const allPosts: {
+		type: "commit" | "fork";
+		data: DataAllPosts;
+		createdAt: Date;
+	}[] = [];
+
+	commits.forEach((commit) => {
+		allPosts.push({ type: "commit", data: commit, createdAt: commit.createdAt });
+	});
+
+	forks.forEach((fork) => {
+		allPosts.push({ type: "fork", data: fork, createdAt: fork.createdAt });
+	});
+
+	allPosts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -84,12 +87,25 @@ export default async function HomePage() {
 						<GitfeelComposer user={user} />
 
 						<div className="space-y-4">
-							{commits.map((commit) => (
-								<GitfeelCommit commit={commit} key={commit.id} user={user} />
+							{allPosts.map((post, index) => (
+								<div key={`${post.type}-${post.data.id}-${index}`}>
+									{post.type === "commit" ? (
+										<GitfeelCommit commit={post.data as CommitWithDetails} user={user} />
+									) : (
+										<GitfeelCommit
+											commit={(post.data as ForkWithDetails).commit}
+											forkContent={(post.data as ForkWithDetails).content}
+											forkDate={new Date(post.data.createdAt)}
+											forkUser={(post.data as ForkWithDetails).user}
+											isFork={true}
+											user={user}
+										/>
+									)}
+								</div>
 							))}
 						</div>
 
-						{commits.length === 0 && (
+						{allPosts.length === 0 && (
 							<Card className="commit-card">
 								<CardContent className="p-12 text-center">
 									<p className="text-muted-foreground">No hay commits aún. ¡Sé el primero en compartir!</p>
@@ -102,16 +118,14 @@ export default async function HomePage() {
 					<div className="space-y-6">
 						{!user && (
 							<Card className="commit-card">
-								<CardHeader>
-									<CardTitle className="flex items-center gap-2">
-										<Users className="h-5 w-5" />
-										Únete a gitfeel
-									</CardTitle>
-								</CardHeader>
-								<CardContent className="space-y-3">
+								<div className="commit-header">
+									<Users className="h-3 w-3" />
+									<span>únete a gitfeel</span>
+								</div>
+								<CardContent className="space-y-3 p-4">
 									<p className="text-muted-foreground text-sm">Comparte tus frustraciones, logros y dudas de programación</p>
 									<div className="space-y-2">
-										<Button asChild className="w-full">
+										<Button asChild className="gitfeel-button w-full">
 											<Link href="/auth/signin">Iniciar Sesión</Link>
 										</Button>
 										<Button asChild className="w-full bg-transparent" variant="outline">
@@ -124,20 +138,23 @@ export default async function HomePage() {
 
 						{/* Trending Tags */}
 						<Card className="commit-card">
-							<CardHeader>
-								<CardTitle className="flex items-center gap-2">
-									<Hash className="h-5 w-5" />
-									Tags Trending
-								</CardTitle>
-							</CardHeader>
-							<CardContent className="space-y-3">
+							<div className="commit-header">
+								<Hash className="h-3 w-3" />
+								<span>tags trending</span>
+							</div>
+							<CardContent className="space-y-3 p-4">
 								{trendingTags.map((tag) => (
 									<Link
 										className="flex items-center justify-between rounded-md p-2 transition-colors hover:bg-muted/50"
 										href={`/commits?tags=${tag.name}`}
 										key={tag.id}
 									>
-										<Badge variant="secondary">#{tag.name}</Badge>
+										<Badge
+											className="border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-400"
+											variant="outline"
+										>
+											#{tag.name}
+										</Badge>
 										<span className="text-muted-foreground text-sm">{tag._count.commits} commits</span>
 									</Link>
 								))}
@@ -146,25 +163,23 @@ export default async function HomePage() {
 
 						{/* Active Developers */}
 						<Card className="commit-card">
-							<CardHeader>
-								<CardTitle className="flex items-center gap-2">
-									<TrendingUp className="h-5 w-5" />
-									Developers Activos
-								</CardTitle>
-							</CardHeader>
-							<CardContent className="space-y-3">
-								{activeUsers.map((user) => (
+							<div className="commit-header">
+								<TrendingUp className="h-3 w-3" />
+								<span>developers activos</span>
+							</div>
+							<CardContent className="space-y-3 p-4">
+								{activeUsers.map((activeUser) => (
 									<Link
 										className="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-muted/50"
-										href={`/dev/${user.id}`}
-										key={user.id}
+										href={`/dev/${activeUser.id}`}
+										key={activeUser.id}
 									>
-										<div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-500 font-semibold text-sm">
-											{user.name?.charAt(0).toUpperCase()}
+										<div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-500 font-semibold text-sm text-white">
+											{activeUser.name?.charAt(0).toUpperCase()}
 										</div>
 										<div className="min-w-0 flex-1">
-											<p className="truncate font-medium">{user.name}</p>
-											<p className="text-muted-foreground text-sm">{user._count.commits} commits</p>
+											<p className="truncate font-medium">{activeUser.name}</p>
+											<p className="text-muted-foreground text-sm">{activeUser._count.commits} commits</p>
 										</div>
 									</Link>
 								))}

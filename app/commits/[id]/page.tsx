@@ -1,21 +1,22 @@
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { ArrowLeft, Code, MessageCircle } from "lucide-react";
-
+import { ArrowLeft, Code, MessageCircle, Send, Users } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { startTransition } from "react";
 import { GitfeelCommit } from "@/components/gitfeel-commit";
-import { PatchForm } from "@/components/patch-form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import { getCurrentUser } from "@/data/user";
+import { createPatch } from "@/lib/actions/patches";
 import prisma from "@/lib/prisma";
 
 interface CommitDetailPageProps {
-	params: Promise<{
+	params: {
 		id: string;
-	}>;
+	};
 }
 
 async function getCommit(id: string) {
@@ -60,7 +61,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: CommitDetailPageProps) {
-	const commit = await getCommit((await params).id);
+	const commit = await getCommit(params.id);
 
 	if (!commit) {
 		return {
@@ -76,8 +77,7 @@ export async function generateMetadata({ params }: CommitDetailPageProps) {
 
 export default async function CommitDetailPage({ params }: CommitDetailPageProps) {
 	const user = await getCurrentUser();
-
-	const commit = await getCommit((await params).id);
+	const commit = await getCommit(params.id);
 
 	if (!commit) {
 		notFound();
@@ -87,7 +87,7 @@ export default async function CommitDetailPage({ params }: CommitDetailPageProps
 		<div className="min-h-screen bg-background">
 			<div className="container mx-auto max-w-2xl px-4 py-8">
 				<div className="space-y-6">
-					{/* Updated Back Button */}
+					{/* Navigation */}
 					<div className="flex items-center gap-4">
 						<Button asChild size="sm" variant="ghost">
 							<Link className="flex items-center gap-2" href="/commits">
@@ -100,35 +100,90 @@ export default async function CommitDetailPage({ params }: CommitDetailPageProps
 					{/* Main Commit */}
 					<GitfeelCommit commit={commit} user={user} />
 
+					{/* Add Patch Form - MOVED TO TOP */}
+					{user ? (
+						<Card className="commit-card">
+							<div className="commit-header">
+								<Send className="h-3 w-3" />
+								<span>agregar patch</span>
+								<span className="ml-auto">@{user.username}</span>
+							</div>
+							<CardContent className="p-4">
+								<form
+									action={async (formData) => {
+										"use server";
+										startTransition(async () => {
+											await createPatch(formData);
+										});
+									}}
+									className="space-y-4"
+								>
+									<input name="commitId" type="hidden" value={commit.id} />
+									<div className="flex gap-3">
+										<Avatar className="h-8 w-8 ring-2 ring-primary/20">
+											<AvatarImage src={user.image || ""} />
+											<AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+												{user.name?.charAt(0).toUpperCase()}
+											</AvatarFallback>
+										</Avatar>
+										<div className="flex-1 space-y-3">
+											<div className="code-block">
+												<div className="mb-2 flex items-center gap-2 text-cyan-400">
+													<span className="text-green-400">$</span>
+													<span className="text-sm">git add patch</span>
+												</div>
+												<Textarea
+													className="min-h-[80px] resize-none border-blue-500/30 border-l-2 border-none bg-transparent pl-4 font-mono text-slate-100 placeholder:text-slate-500 focus-visible:ring-0"
+													name="content"
+													placeholder="Comparte tus pensamientos, sugerencias o experiencias..."
+													required
+												/>
+											</div>
+											<div className="flex justify-end">
+												<Button className="gitfeel-button flex items-center gap-2" size="sm" type="submit">
+													<Send className="h-4 w-4" />
+													Enviar Patch
+												</Button>
+											</div>
+										</div>
+									</div>
+								</form>
+							</CardContent>
+						</Card>
+					) : (
+						<Card className="commit-card">
+							<div className="commit-header">
+								<Code className="h-3 w-3" />
+								<span>autenticación requerida</span>
+							</div>
+							<CardContent className="p-8 text-center">
+								<div className="code-block mb-4">
+									<p className="text-slate-400">$ git patch --interactive</p>
+									<p className="text-red-400">error: authentication required</p>
+								</div>
+								<p className="mb-4 text-muted-foreground">Inicia sesión para contribuir a esta discusión</p>
+							</CardContent>
+						</Card>
+					)}
+
 					{/* Patches Section */}
 					<Card className="commit-card">
 						<div className="commit-header">
 							<MessageCircle className="h-3 w-3" />
-							<span>patches & discussions</span>
-							<span className="ml-auto">{commit._count.patches} patches</span>
+							<span>hilo de discusión</span>
+							<span className="ml-auto flex items-center gap-1">
+								<Users className="h-3 w-3" />
+								{commit._count.patches} patches
+							</span>
 						</div>
-						<CardContent className="space-y-6 p-6">
-							{/* Add Patch Form */}
-							{user ? (
-								<PatchForm commitId={commit.id} user={user} />
-							) : (
-								<div className="py-8 text-center">
-									<div className="code-block mb-4">
-										<p className="text-slate-400">$ git patch --interactive</p>
-										<p className="text-red-400">error: authentication required</p>
-									</div>
-									<p className="mb-4 text-muted-foreground">Sign in to contribute to this discussion</p>
-								</div>
-							)}
-
-							{/* Patches List */}
+						<CardContent className="p-6">
 							<div className="space-y-4">
 								{commit.patches.map((patch, index) => (
 									<div className="commit-card" key={patch.id}>
 										<div className="commit-header">
 											<Code className="h-3 w-3" />
 											<span>
-												patch #{index + 1} by {patch.author.username}
+												patch #{index + 1} por {patch.author.username}
 											</span>
 											<span className="ml-auto">
 												{formatDistanceToNow(new Date(patch.createdAt), {
@@ -168,12 +223,12 @@ export default async function CommitDetailPage({ params }: CommitDetailPageProps
 
 								{commit.patches.length === 0 && (
 									<div className="py-8 text-center">
-										<div className="code-block mb-4">
+										<div className="code-block mb-4 inline-block">
 											<p className="text-slate-400">$ git log --patches</p>
 											<p className="text-yellow-400">warning: no patches found</p>
 										</div>
 										<MessageCircle className="mx-auto mb-4 h-12 w-12 opacity-50" />
-										<p className="text-muted-foreground">No patches yet. Be the first to contribute!</p>
+										<p className="text-muted-foreground">No hay patches aún. ¡Sé el primero en contribuir!</p>
 									</div>
 								)}
 							</div>
