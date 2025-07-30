@@ -31,6 +31,63 @@ export interface UploadedFile {
 	isMainImage: boolean;
 }
 
+const isUploadedFile = (
+	val: UploadedFile | UploadedFile[] | null | undefined,
+): val is UploadedFile => !!val && !Array.isArray(val);
+
+const isValueArray = (
+	val: UploadedFile | UploadedFile[] | null | undefined,
+): val is UploadedFile[] => Array.isArray(val);
+
+const uploadFile = async (
+	file: File,
+	isMainImage: boolean,
+	uploadToS3: (
+		file: File,
+	) => Promise<{ key?: string; presignedUrl?: string; error?: string }>,
+	setUploadProgress: (progress: number) => void,
+): Promise<UploadedFile | null> => {
+	try {
+		const { key, presignedUrl, error } = await uploadToS3(file);
+
+		if (!presignedUrl || error || !key) {
+			toast.error(error || "Error al subir");
+			return null;
+		}
+
+		await new Promise<void>((resolve, reject) => {
+			const xhr = new XMLHttpRequest();
+
+			xhr.upload.onprogress = (event) => {
+				if (event.lengthComputable) {
+					const percent = Math.round((event.loaded / event.total) * 100);
+					setUploadProgress(percent);
+				}
+			};
+
+			xhr.onload = () => {
+				if (xhr.status === 200 || xhr.status === 204) resolve();
+				else reject(new Error("Falló la subida"));
+			};
+
+			xhr.open("PUT", presignedUrl);
+			xhr.setRequestHeader("Content-Type", file.type);
+			xhr.send(file);
+		});
+
+		return {
+			url: presignedUrl,
+			key: key,
+			name: file.name,
+			size: file.size,
+			isMainImage: isMainImage,
+		};
+	} catch {
+		toast.error("Error al subir archivo");
+		return null;
+	}
+};
+
 interface UploaderProps {
 	variant?: "default" | "compact" | "minimal" | "avatar";
 	maxFiles?: number;
@@ -60,13 +117,6 @@ export function Uploader({
 	const [uploadProgress, setUploadProgress] = useState(0);
 	const { uploadToS3, deleteFromS3 } = useS3Uploader();
 
-	const isUploadedFile = (
-		val: UploadedFile | UploadedFile[] | null | undefined,
-	): val is UploadedFile => !!val && !Array.isArray(val);
-
-	const isValueArray = (
-		val: UploadedFile | UploadedFile[] | null | undefined,
-	): val is UploadedFile[] => Array.isArray(val);
 	const canUploadMoreFiles = (
 		value: UploadedFile | UploadedFile[] | null | undefined,
 		max = maxFiles,
@@ -87,57 +137,11 @@ export function Uploader({
 				if (newMainImage) {
 					newMainImage.isMainImage = true;
 				}
-				// actualizar el estado con las nuevas imagenes con isMainImage actualizado
 				onChange(value);
 			}
 		},
-		[onChange, value, isValueArray.length],
+		[onChange, value], // ✅ CORRECTO
 	);
-
-	const uploadFile = async (
-		file: File,
-		isMainImage: boolean,
-	): Promise<UploadedFile | null> => {
-		try {
-			const { key, presignedUrl, error } = await uploadToS3(file);
-
-			if (!presignedUrl || error || !key) {
-				toast.error(error || "Error al subir");
-				return null;
-			}
-
-			await new Promise<void>((resolve, reject) => {
-				const xhr = new XMLHttpRequest();
-
-				xhr.upload.onprogress = (event) => {
-					if (event.lengthComputable) {
-						const percent = Math.round((event.loaded / event.total) * 100);
-						setUploadProgress(percent);
-					}
-				};
-
-				xhr.onload = () => {
-					if (xhr.status === 200 || xhr.status === 204) resolve();
-					else reject(new Error("Falló la subida"));
-				};
-
-				xhr.open("PUT", presignedUrl);
-				xhr.setRequestHeader("Content-Type", file.type);
-				xhr.send(file);
-			});
-
-			return {
-				url: presignedUrl,
-				key: key,
-				name: file.name,
-				size: file.size,
-				isMainImage: isMainImage,
-			};
-		} catch {
-			toast.error("Error al subir archivo");
-			return null;
-		}
-	};
 
 	const onDrop = useCallback(
 		async (acceptedFiles: File[]) => {
@@ -170,7 +174,12 @@ export function Uploader({
 					// solo es principal si no tiene nada el array de imagenes cargadas y el index es 0
 					const isMainImage = !value.length && i === 0;
 
-					const result = await uploadFile(acceptedFiles[i], isMainImage);
+					const result = await uploadFile(
+						acceptedFiles[i],
+						isMainImage,
+						uploadToS3,
+						setUploadProgress,
+					);
 
 					if (result) uploadedArray?.push(result);
 				}
@@ -182,7 +191,12 @@ export function Uploader({
 			} else {
 				const isMainImage = !value;
 
-				uploaded = await uploadFile(acceptedFiles[0], isMainImage);
+				uploaded = await uploadFile(
+					acceptedFiles[0],
+					isMainImage,
+					uploadToS3,
+					setUploadProgress,
+				);
 
 				onChange(uploaded);
 				toast.success("Archivo subido");
@@ -191,7 +205,7 @@ export function Uploader({
 			setUploading(false);
 			setUploadProgress(0);
 		},
-		[value, maxFiles, maxSize, onChange, disabled],
+		[disabled, maxFiles, maxSize, onChange, value, uploadToS3],
 	);
 
 	const rejectedFiles = useCallback((fileRejection: FileRejection[]) => {
@@ -211,8 +225,14 @@ export function Uploader({
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({
 		onDrop,
 		onDropRejected: rejectedFiles,
-		// biome-ignore lint/performance/noAccumulatingSpread: <explanation>
-		accept: accept.reduce((acc, type) => ({ ...acc, [type]: [] }), {}),
+
+		accept: accept.reduce(
+			(acc, type) => {
+				acc[type] = [];
+				return acc;
+			},
+			{} as Record<string, string[]>,
+		),
 		maxFiles: maxFiles - (isValueArray(value) ? value.length : 0),
 		disabled: disabled || uploading,
 		maxSize: maxSize * 1024 * 1024, // in bytes
@@ -289,7 +309,7 @@ export function Uploader({
 								<ImageWithSkeleton
 									src={value.url || "/placeholder.svg"}
 									alt={value.name || "Avatar"}
-									className=" h-full min-h-32 w-full min-w-32 rounded-full border-4 border-gray-200"
+									className="h-full min-h-32 w-full min-w-32 rounded-full border-4 border-gray-200"
 								/>
 								<AlertDialog>
 									<AlertDialogTrigger asChild>
@@ -661,7 +681,7 @@ export function Uploader({
 															type="button"
 															size="icon"
 															variant="outline"
-															className="absolute top-2 left-2 h-6 w-6 "
+															className="absolute top-2 left-2 h-6 w-6"
 														>
 															<StarIcon className="h-4 w-4 text-yellow-500" />
 														</Button>

@@ -1,6 +1,8 @@
 import { Inter } from "next/font/google";
 import type React from "react";
 import "./globals.css";
+import { NavbarWrapper } from "@/components/navbar-wrapper";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { createMetadata } from "@/lib/metadata";
 
@@ -32,8 +34,11 @@ export default function RootLayout({
 	return (
 		<html lang="es">
 			<body className={inter.className}>
-				{children}
-				<Toaster />
+				<ThemeProvider>
+					<NavbarWrapper />
+					{children}
+					<Toaster />
+				</ThemeProvider>
 			</body>
 		</html>
 	);

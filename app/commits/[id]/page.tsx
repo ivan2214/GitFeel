@@ -14,9 +14,9 @@ import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
 interface CommitDetailPageProps {
-	params: {
+	params: Promise<{
 		id: string;
-	};
+	}>;
 }
 
 async function getCommit(id: string) {
@@ -61,7 +61,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: CommitDetailPageProps) {
-	const commit = await getCommit(params.id);
+	const commit = await getCommit((await params).id);
 
 	if (!commit) {
 		return {
@@ -82,7 +82,7 @@ export default async function CommitDetailPage({
 		headers: await headers(),
 	});
 
-	const commit = await getCommit(params.id);
+	const commit = await getCommit((await params).id);
 
 	if (!commit) {
 		notFound();
@@ -90,13 +90,14 @@ export default async function CommitDetailPage({
 
 	return (
 		<div className="min-h-screen bg-background">
-			<div className="container mx-auto px-4 py-8 max-w-2xl">
+			<div className="container mx-auto max-w-2xl px-4 py-8">
 				<div className="space-y-6">
-					<div className="flex items-center gap-4">
+					{/* Updated Back Button */}
+					<div className="mb-6 flex items-center gap-4">
 						<Button asChild variant="ghost" size="sm">
-							<Link href="/" className="flex items-center gap-2">
+							<Link href="/commits" className="flex items-center gap-2">
 								<ArrowLeft className="h-4 w-4" />
-								Volver
+								Volver a explorar
 							</Link>
 						</Button>
 					</div>
@@ -117,6 +118,7 @@ export default async function CommitDetailPage({
 							{session?.user && (
 								<form
 									action={async (formData) => {
+										"use server";
 										await createPatch(formData);
 									}}
 									className="space-y-4"
@@ -136,7 +138,7 @@ export default async function CommitDetailPage({
 												className="min-h-[80px]"
 												required
 											/>
-											<div className="flex justify-end mt-2">
+											<div className="mt-2 flex justify-end">
 												<Button type="submit" size="sm">
 													Enviar Patch
 												</Button>
@@ -151,7 +153,7 @@ export default async function CommitDetailPage({
 								{commit.patches.map((patch) => (
 									<div
 										key={patch.id}
-										className="flex gap-3 p-4 bg-muted/30 rounded-lg"
+										className="flex gap-3 rounded-lg bg-muted/30 p-4"
 									>
 										<Link href={`/dev/${patch.author.id}`}>
 											<Avatar className="h-8 w-8">
@@ -182,8 +184,8 @@ export default async function CommitDetailPage({
 								))}
 
 								{commit.patches.length === 0 && (
-									<div className="text-center py-8 text-muted-foreground">
-										<MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+									<div className="py-8 text-center text-muted-foreground">
+										<MessageCircle className="mx-auto mb-4 h-12 w-12 opacity-50" />
 										<p>No hay patches aún. ¡Sé el primero en comentar!</p>
 									</div>
 								)}

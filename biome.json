@@ -6,7 +6,8 @@
 		"useIgnoreFile": false
 	},
 	"files": {
-		"ignoreUnknown": false
+		"ignoreUnknown": false,
+		"includes": ["app/**", "components/**", "data/**", "hooks/**", "lib/**"]
 	},
 	"formatter": {
 		"enabled": true,
@@ -14,8 +15,20 @@
 	},
 	"linter": {
 		"enabled": true,
+		"domains": {
+			"next": "all",
+			"react": "all",
+			"project": "all"
+		},
 		"rules": {
-			"recommended": true
+			"recommended": true,
+			"nursery": {
+				"useSortedClasses": {
+					"level": "error",
+					"fix": "safe",
+					"options": {}
+				}
+			}
 		}
 	},
 	"javascript": {
@@ -27,7 +40,8 @@
 		"enabled": true,
 		"actions": {
 			"source": {
-				"organizeImports": "on"
+				"organizeImports": "on",
+				"recommended": true
 			}
 		}
 	}

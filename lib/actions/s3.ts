@@ -8,7 +8,7 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { revalidatePath } from "next/cache";
 import { v4 as uuidv4 } from "uuid";
-import prisma from "../prisma";
+import prisma from "../prisma.ts";
 
 const s3Client = new S3Client({
 	region: process.env.AWS_REGION || "",

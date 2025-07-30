@@ -1,12 +1,10 @@
-import { Hash, TrendingUp, Users } from "lucide-react";
-import { headers } from "next/headers";
+import { Hash, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { CommitCard } from "@/components/commit-card";
 import { CommitComposer } from "@/components/commit-composer";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { auth } from "@/lib/auth";
+import { getCurrentUser } from "@/data/user";
 import prisma from "@/lib/prisma";
 
 async function getCommits() {
@@ -72,9 +70,7 @@ async function getActiveUsers() {
 }
 
 export default async function HomePage() {
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	});
+	const currentUser = await getCurrentUser();
 
 	const [commits, trendingTags, activeUsers] = await Promise.all([
 		getCommits(),
@@ -84,19 +80,10 @@ export default async function HomePage() {
 
 	return (
 		<div className="min-h-screen bg-background">
-			<div className="container mx-auto px-4 py-8">
-				<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+			<div className="container mx-auto px-4 py-6">
+				<div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
 					{/* Main Feed */}
-					<div className="lg:col-span-2 space-y-6">
-						<div className="text-center space-y-2">
-							<h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-								gitfeel
-							</h1>
-							<p className="text-muted-foreground">
-								Donde los developers comparten sus commits emocionales
-							</p>
-						</div>
-
+					<div className="space-y-6 lg:col-span-2">
 						<CommitComposer />
 
 						<div className="space-y-4">
@@ -104,7 +91,7 @@ export default async function HomePage() {
 								<CommitCard
 									key={commit.id}
 									commit={commit}
-									currentUserId={session?.user?.id}
+									currentUserId={currentUser?.id}
 								/>
 							))}
 						</div>
@@ -122,34 +109,6 @@ export default async function HomePage() {
 
 					{/* Sidebar */}
 					<div className="space-y-6">
-						{!session?.user && (
-							<Card>
-								<CardHeader>
-									<CardTitle className="flex items-center gap-2">
-										<Users className="h-5 w-5" />
-										Únete a gitfeel
-									</CardTitle>
-								</CardHeader>
-								<CardContent className="space-y-3">
-									<p className="text-sm text-muted-foreground">
-										Comparte tus frustraciones, logros y dudas de programación
-									</p>
-									<div className="space-y-2">
-										<Button asChild className="w-full">
-											<Link href="/auth/signin">Iniciar Sesión</Link>
-										</Button>
-										<Button
-											asChild
-											variant="outline"
-											className="w-full bg-transparent"
-										>
-											<Link href="/auth/signup">Registrarse</Link>
-										</Button>
-									</div>
-								</CardContent>
-							</Card>
-						)}
-
 						{/* Trending Tags */}
 						<Card>
 							<CardHeader>
@@ -163,10 +122,10 @@ export default async function HomePage() {
 									<Link
 										key={tag.id}
 										href={`/commits?tags=${tag.name}`}
-										className="flex items-center justify-between hover:bg-muted/50 p-2 rounded-md transition-colors"
+										className="flex items-center justify-between rounded-md p-2 transition-colors hover:bg-muted/50"
 									>
 										<Badge variant="secondary">#{tag.name}</Badge>
-										<span className="text-sm text-muted-foreground">
+										<span className="text-muted-foreground text-sm">
 											{tag._count.commits} commits
 										</span>
 									</Link>
@@ -187,14 +146,14 @@ export default async function HomePage() {
 									<Link
 										key={user.id}
 										href={`/dev/${user.id}`}
-										className="flex items-center gap-3 hover:bg-muted/50 p-2 rounded-md transition-colors"
+										className="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-muted/50"
 									>
-										<div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-sm font-semibold">
+										<div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-500 font-semibold text-sm text-white">
 											{user.name?.charAt(0).toUpperCase()}
 										</div>
-										<div className="flex-1 min-w-0">
-											<p className="font-medium truncate">{user.name}</p>
-											<p className="text-sm text-muted-foreground">
+										<div className="min-w-0 flex-1">
+											<p className="truncate font-medium">{user.name}</p>
+											<p className="text-muted-foreground text-sm">
 												{user._count.commits} commits
 											</p>
 										</div>

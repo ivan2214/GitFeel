@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import type { Prisma } from "../generated/prisma";
+import type { Prisma } from "../generated/prisma.ts";
 
 interface CommitsPageProps {
 	searchParams: {
@@ -100,23 +100,23 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 	return (
 		<div className="min-h-screen bg-background">
 			<div className="container mx-auto px-4 py-8">
-				<div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+				<div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
 					{/* Filters Sidebar */}
 					<div className="space-y-6">
 						<Card>
 							<CardContent className="p-6">
-								<h2 className="font-semibold mb-4 flex items-center gap-2">
+								<h2 className="mb-4 flex items-center gap-2 font-semibold">
 									<Filter className="h-4 w-4" />
 									Filtros
 								</h2>
 
 								<div className="space-y-4">
 									<div>
-										<Label className="text-sm font-medium mb-2 block">
+										<Label className="mb-2 block font-medium text-sm">
 											Buscar en commits
 										</Label>
 										<div className="relative">
-											<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+											<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
 											<Input
 												placeholder="Buscar..."
 												defaultValue={searchParams.query}
@@ -126,7 +126,7 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 									</div>
 
 									<div>
-										<Label className="text-sm font-medium mb-2 block">
+										<Label className="mb-2 block font-medium text-sm">
 											Tags populares
 										</Label>
 										<div className="flex flex-wrap gap-2">
@@ -152,27 +152,24 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 					</div>
 
 					{/* Main Content */}
-					<div className="lg:col-span-3 space-y-6">
+					<div className="space-y-6 lg:col-span-3">
 						<div className="flex items-center justify-between">
 							<div>
-								<h1 className="text-2xl font-bold">Explorar Commits</h1>
+								<h1 className="font-bold text-2xl">Explorar Commits</h1>
 								<p className="text-muted-foreground">
 									{searchParams.tags || searchParams.query
 										? `Resultados filtrados (${commits.length})`
 										: `Todos los commits (${commits.length})`}
 								</p>
 							</div>
-							<Button asChild>
-								<Link href="/">Volver al inicio</Link>
-							</Button>
 						</div>
 
 						{/* Active Filters */}
 						{(activeTags.length > 0 || searchParams.query) && (
 							<Card>
 								<CardContent className="p-4">
-									<div className="flex items-center gap-2 flex-wrap">
-										<span className="text-sm font-medium">
+									<div className="flex flex-wrap items-center gap-2">
+										<span className="font-medium text-sm">
 											Filtros activos:
 										</span>
 										{activeTags.map((tag) => (
@@ -199,7 +196,7 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 										)}
 										<Link
 											href="/commits"
-											className="text-sm text-blue-500 hover:underline"
+											className="text-blue-500 text-sm hover:underline"
 										>
 											Limpiar filtros
 										</Link>

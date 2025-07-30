@@ -73,11 +73,11 @@ export function CommitCard({
 	const isStashed = false; // TODO: Implement user's stashed commits check
 
 	return (
-		<Card className="hover:bg-muted/50 transition-colors">
+		<Card className="transition-colors hover:bg-muted/50">
 			<CardContent className="p-6">
 				<div className="flex gap-3">
 					<Link href={`/dev/${commit.author.id}`}>
-						<Avatar className="h-10 w-10 hover:opacity-80 transition-opacity">
+						<Avatar className="h-10 w-10 transition-opacity hover:opacity-80">
 							<AvatarImage src={commit.author.image || ""} />
 							<AvatarFallback>
 								{commit.author.name?.charAt(0).toUpperCase()}
@@ -97,7 +97,7 @@ export function CommitCard({
 								@{commit.author.username}
 							</span>
 							<span className="text-muted-foreground">·</span>
-							<span className="text-muted-foreground text-sm flex items-center gap-1">
+							<span className="flex items-center gap-1 text-muted-foreground text-sm">
 								<Calendar className="h-3 w-3" />
 								{formatDistanceToNow(new Date(commit.createdAt), {
 									addSuffix: true,
@@ -107,7 +107,7 @@ export function CommitCard({
 						</div>
 
 						<Link href={`/commits/${commit.id}`} className="block">
-							<p className="text-foreground leading-relaxed hover:text-foreground/80 transition-colors">
+							<p className="text-foreground leading-relaxed transition-colors hover:text-foreground/80">
 								{commit.content}
 							</p>
 						</Link>
@@ -117,7 +117,7 @@ export function CommitCard({
 								<img
 									src={commit.imageUrl || "/placeholder.svg"}
 									alt="Commit image"
-									className="rounded-lg max-w-full h-auto border hover:opacity-90 transition-opacity"
+									className="h-auto max-w-full rounded-lg border transition-opacity hover:opacity-90"
 								/>
 							</Link>
 						)}
@@ -128,7 +128,7 @@ export function CommitCard({
 									<Link key={tag.id} href={`/commits?tags=${tag.name}`}>
 										<Badge
 											variant="secondary"
-											className="hover:bg-primary/10 transition-colors cursor-pointer"
+											className="cursor-pointer transition-colors hover:bg-primary/10"
 										>
 											#{tag.name}
 										</Badge>
@@ -142,7 +142,7 @@ export function CommitCard({
 								<div className="flex items-center gap-6">
 									<Link
 										href={`/commits/${commit.id}`}
-										className="flex items-center gap-2 text-muted-foreground hover:text-blue-500 transition-colors"
+										className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-blue-500"
 									>
 										<MessageCircle className="h-4 w-4" />
 										<span className="text-sm">{commit._count.patches}</span>
@@ -174,7 +174,7 @@ export function CommitCard({
 												variant="ghost"
 												size="sm"
 												disabled={!session?.user}
-												className="flex items-center gap-2 text-muted-foreground hover:text-green-500 transition-colors"
+												className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-green-500"
 											>
 												<GitFork className="h-4 w-4" />
 												<span className="text-sm">{commit._count.forks}</span>
@@ -185,8 +185,8 @@ export function CommitCard({
 												<DialogTitle>Fork este commit</DialogTitle>
 											</DialogHeader>
 											<div className="space-y-4">
-												<div className="p-4 bg-muted rounded-lg">
-													<p className="text-sm text-muted-foreground mb-2">
+												<div className="rounded-lg bg-muted p-4">
+													<p className="mb-2 text-muted-foreground text-sm">
 														Commit original:
 													</p>
 													<p>{commit.content}</p>

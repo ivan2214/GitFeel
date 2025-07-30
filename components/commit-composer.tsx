@@ -113,7 +113,7 @@ export function CommitComposer() {
 							/>
 
 							{showImageUpload && (
-								<div className="border rounded-lg p-4">
+								<div className="rounded-lg border p-4">
 									<Uploader
 										variant="minimal"
 										maxFiles={1}
@@ -130,7 +130,7 @@ export function CommitComposer() {
 								<div className="space-y-2">
 									<div className="flex items-center gap-2">
 										<Sparkles className="h-4 w-4 text-blue-500" />
-										<span className="text-sm font-medium">Tags sugeridos:</span>
+										<span className="font-medium text-sm">Tags sugeridos:</span>
 										{isLoadingTags && (
 											<div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
 										)}
@@ -169,7 +169,7 @@ export function CommitComposer() {
 						</div>
 					</div>
 
-					<div className="flex items-center justify-between pt-3 border-t">
+					<div className="flex items-center justify-between border-t pt-3">
 						<div className="flex items-center gap-2">
 							<Button
 								type="button"

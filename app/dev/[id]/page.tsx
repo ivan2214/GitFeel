@@ -20,9 +20,9 @@ import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
 interface DevProfilePageProps {
-	params: {
+	params: Promise<{
 		id: string;
-	};
+	}>;
 }
 
 async function getUser(id: string) {
@@ -86,7 +86,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: DevProfilePageProps) {
-	const user = await getUser(params.id);
+	const user = await getUser((await params).id);
 
 	if (!user) {
 		return {
@@ -105,7 +105,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 		headers: await headers(),
 	});
 
-	const user = await getUser(params.id);
+	const user = await getUser((await params).id);
 
 	if (!user) {
 		notFound();
@@ -119,13 +119,13 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 	return (
 		<div className="min-h-screen bg-background">
 			<div className="container mx-auto px-4 py-8">
-				<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+				<div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
 					{/* Profile Sidebar */}
 					<div className="space-y-6">
 						<Card>
 							<CardContent className="p-6">
-								<div className="text-center space-y-4">
-									<Avatar className="h-24 w-24 mx-auto">
+								<div className="space-y-4 text-center">
+									<Avatar className="mx-auto h-24 w-24">
 										<AvatarImage src={user.image || ""} />
 										<AvatarFallback className="text-2xl">
 											{user.name?.charAt(0).toUpperCase()}
@@ -133,12 +133,12 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 									</Avatar>
 
 									<div>
-										<h1 className="text-xl font-bold">{user.name}</h1>
+										<h1 className="font-bold text-xl">{user.name}</h1>
 										<p className="text-muted-foreground">@{user.username}</p>
 									</div>
 
 									{user.bio && (
-										<p className="text-sm text-center">{user.bio}</p>
+										<p className="text-center text-sm">{user.bio}</p>
 									)}
 
 									<div className="flex justify-center gap-6 text-sm">
@@ -200,7 +200,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 												href={user.website}
 												target="_blank"
 												rel="noopener noreferrer"
-												className="hover:text-blue-500 truncate"
+												className="truncate hover:text-blue-500"
 											>
 												{user.website}
 											</a>
@@ -214,7 +214,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 												href={user.githubUrl}
 												target="_blank"
 												rel="noopener noreferrer"
-												className="hover:text-blue-500 truncate"
+												className="truncate hover:text-blue-500"
 											>
 												GitHub
 											</a>
@@ -228,7 +228,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 												href={user.twitterUrl}
 												target="_blank"
 												rel="noopener noreferrer"
-												className="hover:text-blue-500 truncate"
+												className="truncate hover:text-blue-500"
 											>
 												Twitter
 											</a>
@@ -249,7 +249,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 					</div>
 
 					{/* Commits Feed */}
-					<div className="lg:col-span-2 space-y-6">
+					<div className="space-y-6 lg:col-span-2">
 						<Card>
 							<CardHeader>
 								<CardTitle className="flex items-center gap-2">
@@ -272,7 +272,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 						{user.commits.length === 0 && (
 							<Card>
 								<CardContent className="p-12 text-center">
-									<GitCommit className="h-12 w-12 mx-auto mb-4 opacity-50" />
+									<GitCommit className="mx-auto mb-4 h-12 w-12 opacity-50" />
 									<p className="text-muted-foreground">
 										{isOwnProfile
 											? "Aún no has hecho ningún commit. ¡Comparte algo!"
