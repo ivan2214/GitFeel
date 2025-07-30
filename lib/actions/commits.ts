@@ -8,6 +8,7 @@ import type { Prisma } from "@/app/generated/prisma";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import type { CommitWithDetails, CreateCommitState, CreateForkState, Fork, ToggleStarState, ToggleStashState } from "@/lib/types";
+import { createNotification } from "./notifications"; // Import notification action
 
 const google = createGoogleGenerativeAI({
 	// custom settings
@@ -133,6 +134,14 @@ export async function toggleStar(_prevState: ToggleStarState, commitId: string):
 					commitId,
 				},
 			},
+			include: {
+				commit: {
+					select: {
+						authorId: true,
+						content: true,
+					},
+				},
+			},
 		});
 
 		if (existingStar) {
@@ -140,12 +149,32 @@ export async function toggleStar(_prevState: ToggleStarState, commitId: string):
 				where: { id: existingStar.id },
 			});
 		} else {
-			await prisma.star.create({
+			const star = await prisma.star.create({
 				data: {
 					userId: session.user.id,
 					commitId,
 				},
+				include: {
+					commit: {
+						select: {
+							authorId: true,
+							content: true,
+						},
+					},
+				},
 			});
+
+			// Notify commit author about the new star
+			const commitAuthorId =
+				star?.commit.authorId || (await prisma.commit.findUnique({ where: { id: commitId }, select: { authorId: true } }))?.authorId;
+			if (session.user.id !== commitAuthorId && commitAuthorId) {
+				await createNotification({
+					recipientId: commitAuthorId,
+					type: "COMMIT_STAR",
+					message: `${session.user.name} le dio star a tu commit: "${star?.commit.content.slice(0, 50) || (await prisma.commit.findUnique({ where: { id: commitId }, select: { content: true } }))?.content.slice(0, 50)}..."`,
+					link: `/commits/${commitId}`,
+				});
+			}
 		}
 
 		revalidatePath("/");
@@ -236,13 +265,32 @@ export async function createFork(
 			return { errorMessage: "Ya has forkeado este commit" };
 		}
 
-		await prisma.fork.create({
+		const fork = await prisma.fork.create({
 			data: {
 				userId: session.user.id,
 				commitId,
 				content: content || null,
 			},
+			include: {
+				commit: {
+					select: {
+						authorId: true,
+						content: true,
+					},
+				},
+			},
 		});
+
+		// Notify commit author about the new fork
+		if (session.user.id !== fork.commit.authorId) {
+			// Only notify if not self-forking
+			await createNotification({
+				recipientId: fork.commit.authorId,
+				type: "COMMIT_FORK",
+				message: `${session.user.name} forkeó tu commit: "${fork.commit.content.slice(0, 50)}..."`,
+				link: `/commits/${commitId}`,
+			});
+		}
 
 		revalidatePath("/");
 		revalidatePath("/commits");

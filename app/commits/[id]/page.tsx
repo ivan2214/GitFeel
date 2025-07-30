@@ -14,9 +14,9 @@ import { createPatch } from "@/lib/actions/patches";
 import prisma from "@/lib/prisma";
 
 interface CommitDetailPageProps {
-	params: {
+	params: Promise<{
 		id: string;
-	};
+	}>;
 }
 
 async function getCommit(id: string) {
@@ -61,7 +61,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: CommitDetailPageProps) {
-	const commit = await getCommit(params.id);
+	const commit = await getCommit((await params).id);
 
 	if (!commit) {
 		return {
@@ -77,7 +77,7 @@ export async function generateMetadata({ params }: CommitDetailPageProps) {
 
 export default async function CommitDetailPage({ params }: CommitDetailPageProps) {
 	const user = await getCurrentUser();
-	const commit = await getCommit(params.id);
+	const commit = await getCommit((await params).id);
 
 	if (!commit) {
 		notFound();

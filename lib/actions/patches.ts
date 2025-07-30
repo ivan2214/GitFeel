@@ -4,8 +4,10 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import type { CreatePatchState } from "@/lib/types";
+import { createNotification } from "./notifications"; // Import notification action
 
-export async function createPatch(formData: FormData) {
+export async function createPatch(formData: FormData): Promise<CreatePatchState> {
 	try {
 		const session = await auth.api.getSession({
 			headers: await headers(),
@@ -26,13 +28,32 @@ export async function createPatch(formData: FormData) {
 			return { errorMessage: "ID del commit requerido" };
 		}
 
-		await prisma.patch.create({
+		const patch = await prisma.patch.create({
 			data: {
 				content: content.trim(),
 				authorId: session.user.id,
 				commitId,
 			},
+			include: {
+				commit: {
+					select: {
+						authorId: true,
+						content: true,
+					},
+				},
+			},
 		});
+
+		// Notify commit author about the new patch
+		if (session.user.id !== patch.commit.authorId) {
+			// Only notify if not self-patching
+			await createNotification({
+				recipientId: patch.commit.authorId,
+				type: "COMMIT_PATCH",
+				message: `${session.user.name} comentó en tu commit: "${patch.commit.content.slice(0, 50)}..."`,
+				link: `/commits/${commitId}`,
+			});
+		}
 
 		revalidatePath(`/commits/${commitId}`);
 

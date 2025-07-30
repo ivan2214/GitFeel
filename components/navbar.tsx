@@ -13,13 +13,19 @@ import { signOut } from "@/lib/auth-client";
 import type { User as UserType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "./mode-toggle";
+import { NotificationsModal } from "./notifications-modal";
 
 const navigation = [
 	{ name: "Feed", href: "/", icon: Home },
 	{ name: "Explore", href: "/commits", icon: Search },
 ];
 
-export function Navbar({ user }: { user: UserType | null }) {
+interface NavbarProps {
+	initialUnreadCount: number;
+	user: UserType | null;
+}
+
+export function Navbar({ user, initialUnreadCount }: NavbarProps) {
 	const pathname = usePathname();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const router = useRouter();
@@ -77,44 +83,47 @@ export function Navbar({ user }: { user: UserType | null }) {
 
 						{/* User Menu or Auth Buttons */}
 						{user ? (
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<Button className="relative h-8 w-8 rounded-full" variant="ghost">
-										<Avatar className="h-8 w-8 ring-2 ring-primary/20">
-											<AvatarImage src={user.image || ""} />
-											<AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-												{user.name?.charAt(0).toUpperCase()}
-											</AvatarFallback>
-										</Avatar>
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align="end" className="w-56" forceMount>
-									<div className="flex items-center justify-start gap-2 p-2">
-										<div className="flex flex-col space-y-1 leading-none">
-											<p className="font-medium">{user.name}</p>
-											<p className="w-[200px] truncate text-muted-foreground text-sm">@{user.username}</p>
+							<div className="flex items-center gap-2">
+								<NotificationsModal initialUnreadCount={initialUnreadCount} /> {/* Notifications Modal */}
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild>
+										<Button className="relative h-8 w-8 rounded-full" variant="ghost">
+											<Avatar className="h-8 w-8 ring-2 ring-primary/20">
+												<AvatarImage src={user.image || ""} />
+												<AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+													{user.name?.charAt(0).toUpperCase()}
+												</AvatarFallback>
+											</Avatar>
+										</Button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent align="end" className="w-56" forceMount>
+										<div className="flex items-center justify-start gap-2 p-2">
+											<div className="flex flex-col space-y-1 leading-none">
+												<p className="font-medium">{user.name}</p>
+												<p className="w-[200px] truncate text-muted-foreground text-sm">@{user.username}</p>
+											</div>
 										</div>
-									</div>
-									<DropdownMenuSeparator />
-									<DropdownMenuItem asChild>
-										<Link className="flex items-center gap-2" href={`/dev/${user.id}`}>
-											<User className="h-4 w-4" />
-											Mi Profile
-										</Link>
-									</DropdownMenuItem>
-									<DropdownMenuItem asChild>
-										<Link className="flex items-center gap-2" href="/profile">
-											<Settings className="h-4 w-4" />
-											Settings
-										</Link>
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
-									<DropdownMenuItem className="flex items-center gap-2 text-red-600 focus:text-red-600" onClick={handleSignOut}>
-										<LogOut className="h-4 w-4" />
-										Sign Out
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
+										<DropdownMenuSeparator />
+										<DropdownMenuItem asChild>
+											<Link className="flex items-center gap-2" href={`/dev/${user.id}`}>
+												<User className="h-4 w-4" />
+												Mi Profile
+											</Link>
+										</DropdownMenuItem>
+										<DropdownMenuItem asChild>
+											<Link className="flex items-center gap-2" href="/profile">
+												<Settings className="h-4 w-4" />
+												Settings
+											</Link>
+										</DropdownMenuItem>
+										<DropdownMenuSeparator />
+										<DropdownMenuItem className="flex items-center gap-2 text-red-600 focus:text-red-600" onClick={handleSignOut}>
+											<LogOut className="h-4 w-4" />
+											Sign Out
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+							</div>
 						) : (
 							<AuthModals />
 						)}
@@ -158,6 +167,13 @@ export function Navbar({ user }: { user: UserType | null }) {
 									) : (
 										<div className="space-y-3">
 											<AuthModals />
+										</div>
+									)}
+
+									{/* Notifications for mobile */}
+									{user && (
+										<div className="border-b pb-4">
+											<NotificationsModal initialUnreadCount={initialUnreadCount} />
 										</div>
 									)}
 

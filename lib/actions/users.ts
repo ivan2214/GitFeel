@@ -4,9 +4,10 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import type { ToggleFollowState } from "@/lib/types";
+import type { ToggleFollowState, UpdateProfileState } from "@/lib/types";
+import { createNotification } from "./notifications"; // Import notification action
 
-export async function updateProfile(formData: FormData) {
+export async function updateProfile(_prevState: UpdateProfileState, formData: FormData): Promise<UpdateProfileState> {
 	try {
 		const session = await auth.api.getSession({
 			headers: await headers(),
@@ -78,6 +79,14 @@ export async function toggleFollow(userId: string): Promise<ToggleFollowState> {
 					followerId: session.user.id,
 					followingId: userId,
 				},
+			});
+
+			// Notify the user being followed
+			await createNotification({
+				recipientId: userId,
+				type: "NEW_FOLLOWER",
+				message: `${session.user.name} te ha empezado a seguir.`,
+				link: `/dev/${session.user.id}`,
 			});
 		}
 

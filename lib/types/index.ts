@@ -58,6 +58,13 @@ type ForkArgs = {
 
 export type Fork<T extends ForkArgs = {}> = Prisma.ForkGetPayload<T>;
 
+type NotificationArgs = {
+	select?: Prisma.NotificationSelect;
+	include?: Prisma.NotificationInclude;
+};
+
+export type Notification<T extends NotificationArgs = {}> = Prisma.NotificationGetPayload<T>;
+
 // Extended types for UI
 export type CommitWithDetails = Commit<{
 	include: {

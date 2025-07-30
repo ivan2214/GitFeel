@@ -56,6 +56,9 @@ model User {
   sessions Session[]
   accounts Account[]
 
+  // Notifications
+  notifications Notification[]
+
   @@map("users")
 }
 
@@ -240,4 +243,18 @@ model UploadedS3 {
   commitId String?
 
   @@index([commitId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // e.g., "NEW_FOLLOWER", "COMMIT_STAR", "COMMIT_PATCH", "COMMIT_FORK"
+  message   String
+  link      String? // Optional link to the related content (e.g., /commits/[id])
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("notifications")
 }
