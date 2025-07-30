@@ -1,0 +1,227 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  phone         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // gitfeel especific fields
+  username   String  @unique
+  bio        String? // readme
+  location   String?
+  website    String?
+  githubUrl  String?
+  twitterUrl String?
+
+  // Commits (posts)
+  commits Commit[]
+
+  // Patches (comments)
+  patches Patch[]
+
+  // Stars (likes)
+  stars Star[]
+
+  // Stashes (saves/bookmarks)
+  stashes Stash[]
+
+  // Forks (retweets)
+  forks Fork[]
+
+  // Following relationships (clones)
+  following Follow[] @relation("UserFollowing")
+  followers Follow[] @relation("UserFollowers")
+
+  // Auth tables
+  sessions Session[]
+  accounts Account[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  accountId             String
+  providerId            String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
+
+model Commit {
+  id        String   @id @default(cuid())
+  content   String
+  imageUrl  String?
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  author  User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  patches Patch[] // Comments
+  stars   Star[] // Likes
+  stashes Stash[] // Bookmarks
+  forks   Fork[] // Retweets
+  tags    CommitTag[]
+
+  // Branch (thread) support
+  branchId String? // If part of a thread
+  branch   Commit?  @relation("CommitBranch", fields: [branchId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  replies  Commit[] @relation("CommitBranch")
+
+  @@index([authorId])
+  @@index([branchId])
+  @@map("commits")
+}
+
+model Patch {
+  id        String   @id @default(cuid())
+  content   String
+  authorId  String
+  commitId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  commit Commit @relation(fields: [commitId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([authorId])
+  @@index([commitId])
+  @@map("patches")
+}
+
+model Star {
+  id        String   @id @default(cuid())
+  userId    String
+  commitId  String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commit Commit @relation(fields: [commitId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([userId, commitId])
+  @@index([commitId])
+  @@map("stars")
+}
+
+model Stash {
+  id        String   @id @default(cuid())
+  userId    String
+  commitId  String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commit Commit @relation(fields: [commitId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([userId, commitId])
+  @@index([commitId])
+  @@map("stashes")
+}
+
+model Fork {
+  id        String   @id @default(cuid())
+  userId    String
+  commitId  String
+  content   String? // Optional additional content when forking
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commit Commit @relation(fields: [commitId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([userId, commitId])
+  @@index([commitId])
+  @@map("forks")
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followingId])
+  @@map("follows")
+}
+
+model Tag {
+  id      String      @id @default(cuid())
+  name    String      @unique
+  color   String      @default("#3b82f6")
+  commits CommitTag[]
+
+  @@map("tags")
+}
+
+model CommitTag {
+  id       String @id @default(cuid())
+  commitId String
+  tagId    String
+
+  commit Commit @relation(fields: [commitId], references: [id], onDelete: Restrict, onUpdate: Restrict) // restrict quiere decorar que no se puede eliminar o actualizar la commitment si esta en la tabla
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([commitId, tagId])
+  @@index([tagId])
+  @@map("commit_tags")
+}

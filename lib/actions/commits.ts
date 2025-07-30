@@ -1,0 +1,251 @@
+"use server";
+
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { generateText } from "ai";
+import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
+import type { CreateCommitState } from "@/lib/types";
+
+const google = createGoogleGenerativeAI({
+	// custom settings
+	apiKey: process.env.GOOGLE_API_KEY,
+});
+
+const model = google("gemini-2.5-flash");
+
+export async function createCommit(
+	_prevState: CreateCommitState,
+	formData: FormData,
+): Promise<CreateCommitState> {
+	try {
+		const session = await auth.api.getSession({
+			headers: await headers(),
+		});
+
+		if (!session?.user) {
+			return { errorMessage: "Debes estar autenticado para hacer un commit" };
+		}
+
+		const content = formData.get("content") as string;
+		const imageUrl = formData.get("imageUrl") as string;
+		const tagNames = formData.get("tags") as string;
+
+		if (!content?.trim()) {
+			return { errorMessage: "El contenido del commit no puede estar vacío" };
+		}
+
+		if (content.length > 280) {
+			return { errorMessage: "El commit no puede tener más de 280 caracteres" };
+		}
+
+		// Create the commit
+		const commit = await prisma.commit.create({
+			data: {
+				content: content.trim(),
+				imageUrl: imageUrl || null,
+				authorId: session.user.id,
+			},
+		});
+
+		// Process tags if provided
+		if (tagNames?.trim()) {
+			const tags = tagNames
+				.split(",")
+				.map((tag) => tag.trim().toLowerCase())
+				.filter(Boolean);
+
+			for (const tagName of tags) {
+				// Find or create tag
+				let tag = await prisma.tag.findUnique({
+					where: { name: tagName },
+				});
+
+				if (!tag) {
+					tag = await prisma.tag.create({
+						data: { name: tagName },
+					});
+				}
+
+				// Link tag to commit
+				await prisma.commitTag.create({
+					data: {
+						commitId: commit.id,
+						tagId: tag.id,
+					},
+				});
+			}
+		}
+
+		revalidatePath("/");
+		revalidatePath("/commits");
+
+		return {
+			successMessage: "Commit publicado exitosamente",
+			commitId: commit.id,
+		};
+	} catch (error) {
+		console.error("Error creating commit:", error);
+		return { errorMessage: "Error al crear el commit" };
+	}
+}
+
+export async function suggestTags(content: string): Promise<string[]> {
+	try {
+		if (!content?.trim() || content.length < 10) {
+			return [];
+		}
+
+		const { text } = await generateText({
+			model,
+			system: `Eres un asistente que sugiere tags para posts de desarrolladores. 
+      Analiza el contenido y sugiere entre 1-3 tags relevantes en español, 
+      relacionados con programación, tecnología, emociones de developers, etc.
+      Responde solo con los tags separados por comas, sin explicaciones.
+      Ejemplos: javascript, frustración, debugging, react, burnout, aprendizaje`,
+			prompt: `Sugiere tags para este post de developer: "${content}"`,
+		});
+
+		return text
+			.split(",")
+			.map((tag) => tag.trim().toLowerCase())
+			.filter(Boolean)
+			.slice(0, 3);
+	} catch (error) {
+		console.error("Error suggesting tags:", error);
+		return [];
+	}
+}
+
+export async function toggleStar(commitId: string) {
+	try {
+		const session = await auth.api.getSession({
+			headers: await headers(),
+		});
+
+		if (!session?.user) {
+			return { errorMessage: "Debes estar autenticado" };
+		}
+
+		const existingStar = await prisma.star.findUnique({
+			where: {
+				userId_commitId: {
+					userId: session.user.id,
+					commitId,
+				},
+			},
+		});
+
+		if (existingStar) {
+			await prisma.star.delete({
+				where: { id: existingStar.id },
+			});
+		} else {
+			await prisma.star.create({
+				data: {
+					userId: session.user.id,
+					commitId,
+				},
+			});
+		}
+
+		revalidatePath("/");
+		revalidatePath("/commits");
+		revalidatePath(`/commits/${commitId}`);
+
+		return { successMessage: existingStar ? "Star removido" : "Star agregado" };
+	} catch (error) {
+		console.error("Error toggling star:", error);
+		return { errorMessage: "Error al procesar la acción" };
+	}
+}
+
+export async function toggleStash(commitId: string) {
+	try {
+		const session = await auth.api.getSession({
+			headers: await headers(),
+		});
+
+		if (!session?.user) {
+			return { errorMessage: "Debes estar autenticado" };
+		}
+
+		const existingStash = await prisma.stash.findUnique({
+			where: {
+				userId_commitId: {
+					userId: session.user.id,
+					commitId,
+				},
+			},
+		});
+
+		if (existingStash) {
+			await prisma.stash.delete({
+				where: { id: existingStash.id },
+			});
+		} else {
+			await prisma.stash.create({
+				data: {
+					userId: session.user.id,
+					commitId,
+				},
+			});
+		}
+
+		revalidatePath("/");
+		revalidatePath("/commits");
+		revalidatePath(`/commits/${commitId}`);
+
+		return {
+			successMessage: existingStash
+				? "Removido del stash"
+				: "Agregado al stash",
+		};
+	} catch (error) {
+		console.error("Error toggling stash:", error);
+		return { errorMessage: "Error al procesar la acción" };
+	}
+}
+
+export async function createFork(commitId: string, content?: string) {
+	try {
+		const session = await auth.api.getSession({
+			headers: await headers(),
+		});
+
+		if (!session?.user) {
+			return { errorMessage: "Debes estar autenticado" };
+		}
+
+		const existingFork = await prisma.fork.findUnique({
+			where: {
+				userId_commitId: {
+					userId: session.user.id,
+					commitId,
+				},
+			},
+		});
+
+		if (existingFork) {
+			return { errorMessage: "Ya has forkeado este commit" };
+		}
+
+		await prisma.fork.create({
+			data: {
+				userId: session.user.id,
+				commitId,
+				content: content || null,
+			},
+		});
+
+		revalidatePath("/");
+		revalidatePath("/commits");
+		revalidatePath(`/commits/${commitId}`);
+
+		return { successMessage: "Commit forkeado exitosamente" };
+	} catch (error) {
+		console.error("Error creating fork:", error);
+		return { errorMessage: "Error al forkear el commit" };
+	}
+}

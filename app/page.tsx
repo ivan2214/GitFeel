@@ -1,103 +1,210 @@
-import Image from "next/image";
+import { Hash, TrendingUp, Users } from "lucide-react";
+import { headers } from "next/headers";
+import Link from "next/link";
+import { CommitCard } from "@/components/commit-card";
+import { CommitComposer } from "@/components/commit-composer";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 
-export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+async function getCommits() {
+	return await prisma.commit.findMany({
+		include: {
+			author: true,
+			tags: {
+				include: {
+					tag: true,
+				},
+			},
+			_count: {
+				select: {
+					patches: true,
+					stars: true,
+					stashes: true,
+					forks: true,
+				},
+			},
+		},
+		orderBy: {
+			createdAt: "desc",
+		},
+		take: 20,
+	});
+}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+async function getTrendingTags() {
+	return await prisma.tag.findMany({
+		include: {
+			_count: {
+				select: {
+					commits: true,
+				},
+			},
+		},
+		orderBy: {
+			commits: {
+				_count: "desc",
+			},
+		},
+		take: 10,
+	});
+}
+
+async function getActiveUsers() {
+	return await prisma.user.findMany({
+		include: {
+			_count: {
+				select: {
+					commits: true,
+					followers: true,
+				},
+			},
+		},
+		orderBy: {
+			commits: {
+				_count: "desc",
+			},
+		},
+		take: 5,
+	});
+}
+
+export default async function HomePage() {
+	const session = await auth.api.getSession({
+		headers: await headers(),
+	});
+
+	const [commits, trendingTags, activeUsers] = await Promise.all([
+		getCommits(),
+		getTrendingTags(),
+		getActiveUsers(),
+	]);
+
+	return (
+		<div className="min-h-screen bg-background">
+			<div className="container mx-auto px-4 py-8">
+				<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+					{/* Main Feed */}
+					<div className="lg:col-span-2 space-y-6">
+						<div className="text-center space-y-2">
+							<h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+								gitfeel
+							</h1>
+							<p className="text-muted-foreground">
+								Donde los developers comparten sus commits emocionales
+							</p>
+						</div>
+
+						<CommitComposer />
+
+						<div className="space-y-4">
+							{commits.map((commit) => (
+								<CommitCard
+									key={commit.id}
+									commit={commit}
+									currentUserId={session?.user?.id}
+								/>
+							))}
+						</div>
+
+						{commits.length === 0 && (
+							<Card>
+								<CardContent className="p-12 text-center">
+									<p className="text-muted-foreground">
+										No hay commits aún. ¡Sé el primero en compartir!
+									</p>
+								</CardContent>
+							</Card>
+						)}
+					</div>
+
+					{/* Sidebar */}
+					<div className="space-y-6">
+						{!session?.user && (
+							<Card>
+								<CardHeader>
+									<CardTitle className="flex items-center gap-2">
+										<Users className="h-5 w-5" />
+										Únete a gitfeel
+									</CardTitle>
+								</CardHeader>
+								<CardContent className="space-y-3">
+									<p className="text-sm text-muted-foreground">
+										Comparte tus frustraciones, logros y dudas de programación
+									</p>
+									<div className="space-y-2">
+										<Button asChild className="w-full">
+											<Link href="/auth/signin">Iniciar Sesión</Link>
+										</Button>
+										<Button
+											asChild
+											variant="outline"
+											className="w-full bg-transparent"
+										>
+											<Link href="/auth/signup">Registrarse</Link>
+										</Button>
+									</div>
+								</CardContent>
+							</Card>
+						)}
+
+						{/* Trending Tags */}
+						<Card>
+							<CardHeader>
+								<CardTitle className="flex items-center gap-2">
+									<Hash className="h-5 w-5" />
+									Tags Trending
+								</CardTitle>
+							</CardHeader>
+							<CardContent className="space-y-3">
+								{trendingTags.map((tag) => (
+									<Link
+										key={tag.id}
+										href={`/commits?tags=${tag.name}`}
+										className="flex items-center justify-between hover:bg-muted/50 p-2 rounded-md transition-colors"
+									>
+										<Badge variant="secondary">#{tag.name}</Badge>
+										<span className="text-sm text-muted-foreground">
+											{tag._count.commits} commits
+										</span>
+									</Link>
+								))}
+							</CardContent>
+						</Card>
+
+						{/* Active Developers */}
+						<Card>
+							<CardHeader>
+								<CardTitle className="flex items-center gap-2">
+									<TrendingUp className="h-5 w-5" />
+									Developers Activos
+								</CardTitle>
+							</CardHeader>
+							<CardContent className="space-y-3">
+								{activeUsers.map((user) => (
+									<Link
+										key={user.id}
+										href={`/dev/${user.id}`}
+										className="flex items-center gap-3 hover:bg-muted/50 p-2 rounded-md transition-colors"
+									>
+										<div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-sm font-semibold">
+											{user.name?.charAt(0).toUpperCase()}
+										</div>
+										<div className="flex-1 min-w-0">
+											<p className="font-medium truncate">{user.name}</p>
+											<p className="text-sm text-muted-foreground">
+												{user._count.commits} commits
+											</p>
+										</div>
+									</Link>
+								))}
+							</CardContent>
+						</Card>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
 }
