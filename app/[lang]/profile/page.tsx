@@ -9,8 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { getCurrentUser } from "@/data/user";
 import { updateProfile } from "@/lib/actions/users";
+import { getDictionary, type Locale } from "@/lib/dictionaries";
 
-export default async function ProfilePage() {
+export default async function ProfilePage({ params }: { params: Promise<{ lang: Locale }> }) {
+	const { lang } = await params;
+	const dict = await getDictionary(lang);
 	const user = await getCurrentUser();
 
 	if (!user) {
@@ -24,9 +27,9 @@ export default async function ProfilePage() {
 					{/* Navigation */}
 					<div className="flex items-center gap-4">
 						<Button asChild size="sm" variant="ghost">
-							<Link className="flex items-center gap-2" href={`/dev/${user.id}`}>
+							<Link className="flex items-center gap-2" href={`/${lang}/dev/${user.id}`}>
 								<ArrowLeft className="h-4 w-4" />
-								Back to profile
+								{dict.pages.profile.backToProfile}
 							</Link>
 						</Button>
 					</div>
@@ -35,7 +38,7 @@ export default async function ProfilePage() {
 					<Card className="commit-card">
 						<div className="commit-header">
 							<Code className="h-3 w-3" />
-							<span>profile configuration</span>
+							<span>{dict.pages.profile.profileConfiguration}</span>
 							<span className="ml-auto">@{user.username}</span>
 						</div>
 						<CardContent className="p-6">
@@ -58,46 +61,44 @@ export default async function ProfilePage() {
 										</Avatar>
 									</div>
 									<div className="flex-1">
-										<h3 className="mb-1 font-medium">Profile Picture</h3>
-										<p className="text-muted-foreground text-sm">
-											Your profile picture is synced from your authentication provider.
-										</p>
+										<h3 className="mb-1 font-medium">{dict.pages.profile.profilePicture}</h3>
+										<p className="text-muted-foreground text-sm">{dict.pages.profile.profilePictureSync}</p>
 									</div>
 								</div>
 
 								{/* Basic Info */}
 								<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 									<div className="space-y-2">
-										<Label htmlFor="name">Display Name</Label>
+										<Label htmlFor="name">{dict.pages.profile.displayName}</Label>
 										<Input
 											className="border-border bg-muted/50"
 											defaultValue={user.name || ""}
 											id="name"
 											name="name"
-											placeholder="Your display name"
+											placeholder={dict.pages.profile.displayNamePlaceholder}
 										/>
 									</div>
 
 									<div className="space-y-2">
-										<Label htmlFor="username">Username</Label>
+										<Label htmlFor="username">{dict.pages.profile.username}</Label>
 										<Input
 											className="border-border bg-muted/30 opacity-60"
 											defaultValue={user.username || ""}
 											disabled
 											id="username"
 											name="username"
-											placeholder="your_username"
+											placeholder={dict.pages.profile.usernamePlaceholder}
 										/>
 										<p className="flex items-center gap-1 text-muted-foreground text-xs">
 											<Info className="h-3 w-3" />
-											Username cannot be changed
+											{dict.pages.profile.usernameCannotChange}
 										</p>
 									</div>
 								</div>
 
 								{/* Bio */}
 								<div className="space-y-2">
-									<Label htmlFor="bio">Bio (README.md)</Label>
+									<Label htmlFor="bio">{dict.pages.profile.bioReadme}</Label>
 									<div className="code-block">
 										<div className="mb-2 flex items-center gap-2 text-cyan-400">
 											<span className="text-green-400">$</span>
@@ -109,33 +110,33 @@ export default async function ProfilePage() {
 											id="bio"
 											maxLength={160}
 											name="bio"
-											placeholder="Tell us about yourself, your stack, favorite bugs..."
+											placeholder={dict.pages.profile.bioPlaceholder}
 										/>
 									</div>
-									<p className="text-muted-foreground text-xs">Maximum 160 characters</p>
+									<p className="text-muted-foreground text-xs">{dict.pages.profile.bioMaxLength}</p>
 								</div>
 
 								{/* Location & Website */}
 								<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 									<div className="space-y-2">
-										<Label htmlFor="location">Location</Label>
+										<Label htmlFor="location">{dict.pages.profile.location}</Label>
 										<Input
 											className="border-border bg-muted/50"
 											defaultValue={user.location || ""}
 											id="location"
 											name="location"
-											placeholder="City, Country"
+											placeholder={dict.pages.profile.locationPlaceholder}
 										/>
 									</div>
 
 									<div className="space-y-2">
-										<Label htmlFor="website">Website</Label>
+										<Label htmlFor="website">{dict.pages.profile.website}</Label>
 										<Input
 											className="border-border bg-muted/50"
 											defaultValue={user.website || ""}
 											id="website"
 											name="website"
-											placeholder="https://your-website.com"
+											placeholder={dict.pages.profile.websitePlaceholder}
 											type="url"
 										/>
 									</div>
@@ -144,25 +145,25 @@ export default async function ProfilePage() {
 								{/* Social Links */}
 								<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 									<div className="space-y-2">
-										<Label htmlFor="githubUrl">GitHub</Label>
+										<Label htmlFor="githubUrl">{dict.pages.profile.github}</Label>
 										<Input
 											className="border-border bg-muted/50"
 											defaultValue={user.githubUrl || ""}
 											id="githubUrl"
 											name="githubUrl"
-											placeholder="https://github.com/your-username"
+											placeholder={dict.pages.profile.githubPlaceholder}
 											type="url"
 										/>
 									</div>
 
 									<div className="space-y-2">
-										<Label htmlFor="twitterUrl">Twitter</Label>
+										<Label htmlFor="twitterUrl">{dict.pages.profile.twitter}</Label>
 										<Input
 											className="border-border bg-muted/50"
 											defaultValue={user.twitterUrl || ""}
 											id="twitterUrl"
 											name="twitterUrl"
-											placeholder="https://twitter.com/your-username"
+											placeholder={dict.pages.profile.twitterPlaceholder}
 											type="url"
 										/>
 									</div>
@@ -171,11 +172,11 @@ export default async function ProfilePage() {
 								{/* Actions */}
 								<div className="flex justify-end gap-3 border-border border-t pt-4">
 									<Button asChild variant="outline">
-										<Link href={`/dev/${user.id}`}>Cancel</Link>
+										<Link href={`/dev/${user.id}`}>{dict.pages.profile.cancel}</Link>
 									</Button>
 									<Button className="gitfeel-button flex items-center gap-2" type="submit">
 										<Save className="h-4 w-4" />
-										Save Changes
+										{dict.pages.profile.saveChanges}
 									</Button>
 								</div>
 							</form>
@@ -186,16 +187,16 @@ export default async function ProfilePage() {
 					<Card className="commit-card">
 						<div className="commit-header">
 							<Info className="h-3 w-3" />
-							<span>profile tips</span>
+							<span>{dict.pages.profile.profileTips}</span>
 						</div>
 						<CardContent className="p-4">
 							<div className="code-block">
 								<div className="space-y-2 text-sm">
-									<p className="text-cyan-400"># Pro tips for your gitfeel profile:</p>
-									<p className="text-slate-300">• Write a bio that shows your personality</p>
-									<p className="text-slate-300">• Link your GitHub to show your work</p>
-									<p className="text-slate-300">• Use your location to connect with local devs</p>
-									<p className="text-slate-300">• Share your website or portfolio</p>
+									<p className="text-cyan-400"># {dict.pages.profile.proTips}</p>
+									<p className="text-slate-300">• {dict.pages.profile.tipBio}</p>
+									<p className="text-slate-300">• {dict.pages.profile.tipGithub}</p>
+									<p className="text-slate-300">• {dict.pages.profile.tipLocation}</p>
+									<p className="text-slate-300">• {dict.pages.profile.tipWebsite}</p>
 								</div>
 							</div>
 						</CardContent>

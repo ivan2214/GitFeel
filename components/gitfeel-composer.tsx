@@ -10,10 +10,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { type UploadedFile, Uploader } from "@/components/uploader";
 import { useAction } from "@/hooks/use-action";
 import { createCommit, suggestTags } from "@/lib/actions/commits";
-
+import type { Dictionary } from "@/lib/dictionaries";
 import type { User } from "@/lib/types";
 
-export function GitfeelComposer({ user }: { user: User | null }) {
+export function GitfeelComposer({ user, dict }: { user: User | null; dict: Dictionary }) {
 	const [content, setContent] = useState("");
 	const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
 	const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -84,10 +84,10 @@ export function GitfeelComposer({ user }: { user: User | null }) {
 			<div className="commit-card">
 				<div className="commit-header">
 					<Code className="h-3 w-3" />
-					<span>authentication required</span>
+					<span>{dict.components.gitfeelComposer.authRequired}</span>
 				</div>
 				<div className="commit-content py-8 text-center">
-					<p className="text-muted-foreground">Sign in to share your developer feelings</p>
+					<p className="text-muted-foreground">{dict.components.gitfeelComposer.authRequiredDescription}</p>
 				</div>
 			</div>
 		);
@@ -100,7 +100,7 @@ export function GitfeelComposer({ user }: { user: User | null }) {
 			{/* Header */}
 			<div className="commit-header">
 				<Code className="h-3 w-3" />
-				<span>new commit</span>
+				<span>{dict.components.gitfeelComposer.newCommit}</span>
 				<span className="ml-auto text-primary">@{user.username}</span>
 			</div>
 
@@ -130,7 +130,7 @@ export function GitfeelComposer({ user }: { user: User | null }) {
 									className="min-h-[100px] resize-none border-blue-500/30 border-l-2 border-none bg-transparent pl-4 font-mono text-slate-100 placeholder:text-slate-500 focus-visible:ring-0"
 									maxLength={280}
 									onChange={(e) => setContent(e.target.value)}
-									placeholder="What's happening in your code? Share your dev feelings..."
+									placeholder={dict.components.gitfeelComposer.placeholder}
 									value={content}
 								/>
 							</div>
@@ -141,7 +141,7 @@ export function GitfeelComposer({ user }: { user: User | null }) {
 										accept={["image/*"]}
 										maxFiles={1}
 										onChange={(file) => setUploadedImage(file as UploadedFile)}
-										placeholder="Upload an image for your commit"
+										placeholder={dict.components.gitfeelComposer.uploadPlaceholder}
 										value={uploadedImage}
 										variant="minimal"
 									/>
@@ -153,7 +153,7 @@ export function GitfeelComposer({ user }: { user: User | null }) {
 								<div className="space-y-2">
 									<div className="flex items-center gap-2">
 										<Sparkles className="h-4 w-4 text-purple-400" />
-										<span className="font-medium text-purple-400 text-sm">Suggested tags:</span>
+										<span className="font-medium text-purple-400 text-sm">{dict.components.gitfeelComposer.suggestedTags}</span>
 										{isLoadingTags && (
 											<div className="h-4 w-4 animate-spin rounded-full border-2 border-purple-400 border-t-transparent" />
 										)}
@@ -212,7 +212,7 @@ export function GitfeelComposer({ user }: { user: User | null }) {
 								type="submit"
 							>
 								<GitCommit className="h-4 w-4" />
-								{pending ? "Committing..." : "Commit"}
+								{pending ? dict.components.gitfeelComposer.committing : dict.components.gitfeelComposer.commit}
 							</Button>
 						</div>
 					</div>

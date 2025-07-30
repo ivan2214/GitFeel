@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getCurrentUser } from "@/data/user";
 import { getCommitsWithForks } from "@/lib/actions/commits";
+import { getDictionary, type Locale } from "@/lib/dictionaries";
 import prisma from "@/lib/prisma";
 import type { CommitWithDetails, ForkWithDetails } from "@/lib/types";
 
@@ -49,8 +50,9 @@ async function getActiveUsers() {
 
 type DataAllPosts = CommitWithDetails | ForkWithDetails;
 
-export default async function HomePage({ params }: { params: Promise<{ lang: string }> }) {
+export default async function HomePage({ params }: { params: Promise<{ lang: Locale }> }) {
 	const { lang } = await params;
+	const dict = await getDictionary(lang);
 
 	const user = await getCurrentUser();
 
@@ -86,20 +88,22 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
 				<div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
 					{/* Main Feed */}
 					<div className="space-y-6 lg:col-span-2">
-						<GitfeelComposer user={user} />
+						<GitfeelComposer dict={dict} user={user} />
 
 						<div className="space-y-4">
 							{allPosts.map((post, index) => (
 								<div key={`${post.type}-${post.data.id}-${index}`}>
 									{post.type === "commit" ? (
-										<GitfeelCommit commit={post.data as CommitWithDetails} user={user} />
+										<GitfeelCommit commit={post.data as CommitWithDetails} dict={dict} lang={lang} user={user} />
 									) : (
 										<GitfeelCommit
 											commit={(post.data as ForkWithDetails).commit}
+											dict={dict}
 											forkContent={(post.data as ForkWithDetails).content}
 											forkDate={new Date(post.data.createdAt)}
 											forkUser={(post.data as ForkWithDetails).user}
 											isFork={true}
+											lang={lang}
 											user={user}
 										/>
 									)}
@@ -110,7 +114,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
 						{allPosts.length === 0 && (
 							<Card className="commit-card">
 								<CardContent className="p-12 text-center">
-									<p className="text-muted-foreground">No hay commits aún. ¡Sé el primero en compartir!</p>
+									<p className="text-muted-foreground">{dict.pages.home.noCommits}</p>
 								</CardContent>
 							</Card>
 						)}
@@ -122,16 +126,16 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
 							<Card className="commit-card">
 								<div className="commit-header">
 									<Users className="h-3 w-3" />
-									<span>únete a gitfeel</span>
+									<span>{dict.pages.home.joinGitfeel}</span>
 								</div>
 								<CardContent className="space-y-3 p-4">
-									<p className="text-muted-foreground text-sm">Comparte tus frustraciones, logros y dudas de programación</p>
+									<p className="text-muted-foreground text-sm">{dict.pages.home.joinDescription}</p>
 									<div className="space-y-2">
 										<Button asChild className="gitfeel-button w-full">
-											<Link href="/auth/signin">Iniciar Sesión</Link>
+											<Link href={`/${lang}/auth/signin`}>{dict.pages.home.signIn}</Link>
 										</Button>
 										<Button asChild className="w-full bg-transparent" variant="outline">
-											<Link href="/auth/signup">Registrarse</Link>
+											<Link href={`/${lang}/auth/signup`}>{dict.pages.home.signUp}</Link>
 										</Button>
 									</div>
 								</CardContent>
@@ -142,7 +146,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
 						<Card className="commit-card">
 							<div className="commit-header">
 								<Hash className="h-3 w-3" />
-								<span>tags trending</span>
+								<span>{dict.pages.home.trendingTags}</span>
 							</div>
 							<CardContent className="space-y-3 p-4">
 								{trendingTags.map((tag) => (
@@ -167,7 +171,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
 						<Card className="commit-card">
 							<div className="commit-header">
 								<TrendingUp className="h-3 w-3" />
-								<span>developers activos</span>
+								<span>{dict.pages.home.activeDevelopers}</span>
 							</div>
 							<CardContent className="space-y-3 p-4">
 								{activeUsers.map((activeUser) => (

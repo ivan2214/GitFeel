@@ -119,7 +119,9 @@
 			"commits": "Commits",
 			"users": "Users",
 			"recent": "Recent",
-			"popular": "Popular"
+			"popular": "Popular",
+			"stars": "Most stars",
+			"forks": "Most forks"
 		}
 	},
 	"errors": {
@@ -133,5 +135,102 @@
 		"title": "gitfeel - Social network for developers",
 		"description": "The social network where developers share their emotional commits, frustrations, achievements and programming doubts.",
 		"keywords": "developers, programmers, social network, git, commits, code, programming"
+	},
+	"pages": {
+		"home": {
+			"noCommits": "No commits yet. Be the first to share!",
+			"joinGitfeel": "join gitfeel",
+			"joinDescription": "Share your frustrations, achievements and programming doubts",
+			"signIn": "Sign In",
+			"signUp": "Sign Up",
+			"trendingTags": "trending tags",
+			"activeDevelopers": "active developers"
+		},
+		"commits": {
+			"explore": "explore commits",
+			"title": "Explore Developer Feelings",
+			"description": "Discover what developers around the world think and feel",
+			"resultsFound": "results found",
+			"search": "Search",
+			"tags": "Tags",
+			"order": "Order",
+			"backToExplore": "Back to explore"
+		},
+		"profile": {
+			"backToProfile": "Back to profile",
+			"profileConfiguration": "profile configuration",
+			"profilePicture": "Profile Picture",
+			"profilePictureSync": "Your profile picture is synced from your authentication provider.",
+			"displayName": "Display Name",
+			"displayNamePlaceholder": "Your display name",
+			"username": "Username",
+			"usernamePlaceholder": "your_username",
+			"usernameCannotChange": "Username cannot be changed",
+			"bioReadme": "Bio (README.md)",
+			"bioPlaceholder": "Tell us about yourself, your stack, favorite bugs...",
+			"bioMaxLength": "Maximum 160 characters",
+			"location": "Location",
+			"locationPlaceholder": "City, Country",
+			"website": "Website",
+			"websitePlaceholder": "https://your-website.com",
+			"github": "GitHub",
+			"githubPlaceholder": "https://github.com/your-username",
+			"twitter": "Twitter",
+			"twitterPlaceholder": "https://twitter.com/your-username",
+			"cancel": "Cancel",
+			"saveChanges": "Save Changes",
+			"profileTips": "profile tips",
+			"proTips": "# Pro tips for your gitfeel profile:",
+			"tipBio": "• Write a bio that shows your personality",
+			"tipGithub": "• Link your GitHub to show your work",
+			"tipLocation": "• Use your location to connect with local devs",
+			"tipWebsite": "• Share your website or portfolio"
+		},
+		"commitDetail": {
+			"addPatch": "add patch",
+			"patchPlaceholder": "Share your thoughts, suggestions or experiences...",
+			"sendPatch": "Send Patch",
+			"authRequired": "authentication required",
+			"authRequiredDescription": "Sign in to contribute to this discussion",
+			"discussionThread": "discussion thread",
+			"patches": "patches",
+			"patchBy": "patch #{number} by {username}",
+			"noPatches": "No patches yet. Be the first to contribute!",
+			"commitNotFound": "Commit not found"
+		}
+	},
+	"components": {
+		"navbar": {
+			"home": "Home",
+			"commits": "Commits",
+			"profile": "Profile",
+			"signIn": "Sign In",
+			"signOut": "Sign Out"
+		},
+		"gitfeelComposer": {
+			"authRequired": "authentication required",
+			"authRequiredDescription": "Sign in to share your developer feelings",
+			"newCommit": "new commit",
+			"placeholder": "What's happening in your code? Share your dev feelings...",
+			"uploadPlaceholder": "Upload an image for your commit",
+			"suggestedTags": "Suggested tags:",
+			"committing": "Committing...",
+			"commit": "Commit"
+		},
+		"gitfeelCommit": {
+			"forkedThis": "forked this",
+			"forkComment": "fork comment",
+			"commitBy": "commit by",
+			"commitAttachment": "Commit attachment",
+			"forkThisCommit": "Fork this commit",
+			"originalCommit": "Original commit:",
+			"forkCommentPlaceholder": "Add your comment to the fork (optional)",
+			"cancel": "Cancel",
+			"fork": "Fork",
+			"forking": "Forking...",
+			"reportCommit": "Report commit",
+			"editCommit": "Edit commit",
+			"deleteCommit": "Delete commit"
+		}
 	}
 }

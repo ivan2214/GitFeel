@@ -24,6 +24,11 @@ export const getDictionary = async (locale: Locale) => {
 };
 
 /**
+ * Tipo que representa la estructura del diccionario de traducciones
+ */
+export type Dictionary = Awaited<ReturnType<typeof getDictionary>>;
+
+/**
  * Lista de idiomas soportados por la aplicación
  */
 export const locales: Locale[] = ["es", "en"];
