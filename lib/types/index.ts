@@ -51,12 +51,22 @@ type TagArgs = {
 export type Tag<T extends TagArgs = {}> = Prisma.TagGetPayload<T>;
 
 /* fork */
+
 type ForkArgs = {
+	// New type for Fork
 	select?: Prisma.ForkSelect;
 	include?: Prisma.ForkInclude;
 };
 
 export type Fork<T extends ForkArgs = {}> = Prisma.ForkGetPayload<T>;
+
+type ForkTagArgs = {
+	// New type for ForkTag
+	select?: Prisma.ForkTagSelect;
+	include?: Prisma.ForkTagInclude;
+};
+
+export type ForkTag<T extends ForkTagArgs = {}> = Prisma.ForkTagGetPayload<T>;
 
 type NotificationArgs = {
 	select?: Prisma.NotificationSelect;
@@ -100,22 +110,10 @@ export type UserWithStats = User<{
 export type ForkWithDetails = Fork<{
 	include: {
 		user: true;
-		commit: {
+		commit: CommitWithDetails;
+		tags: {
 			include: {
-				author: true;
-				tags: {
-					include: {
-						tag: true;
-					};
-				};
-				_count: {
-					select: {
-						patches: true;
-						stars: true;
-						stashes: true;
-						forks: true;
-					};
-				};
+				tag: true;
 			};
 		};
 	};

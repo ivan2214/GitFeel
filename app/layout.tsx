@@ -1,14 +1,11 @@
-import { Inter } from "next/font/google";
 import type React from "react";
 import "./globals.css";
-import { NavbarWrapper } from "@/components/navbar-wrapper";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
-import { getCurrentUser } from "@/data/user";
 import { createMetadata } from "@/lib/metadata";
 
-const inter = Inter({ subsets: ["latin"] });
-
+/**
+ * Metadata básica para la aplicación
+ * Las páginas específicas de idioma tendrán su propia metadata
+ */
 export const metadata = createMetadata({
 	title: {
 		default: "gitfeel - Red social para developers",
@@ -18,17 +15,11 @@ export const metadata = createMetadata({
 	keywords: ["developers", "programadores", "red social", "git", "commits", "código", "programación"],
 });
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-	const user = await getCurrentUser();
-	return (
-		<html lang="es" suppressHydrationWarning>
-			<body className={inter.className}>
-				<ThemeProvider attribute="class" defaultTheme="system" disableTransitionOnChange enableSystem>
-					<NavbarWrapper user={user} />
-					{children}
-					<Toaster position="top-right" richColors />
-				</ThemeProvider>
-			</body>
-		</html>
-	);
+/**
+ * Layout raíz de la aplicación
+ * Solo proporciona la estructura HTML básica
+ * El contenido real se maneja en los layouts de idiomas específicos
+ */
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+	return children;
 }

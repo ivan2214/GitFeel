@@ -1,6 +1,6 @@
 "use client";
 
-import { Code2, Home, LogOut, Menu, Search, Settings, User } from "lucide-react";
+import { Code2, Globe, Home, LogOut, Menu, Search, Settings, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -10,25 +10,43 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { signOut } from "@/lib/auth-client";
+import type { Locale } from "@/lib/dictionaries";
 import type { User as UserType } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { LanguageSelector } from "./language-selector";
 import { ModeToggle } from "./mode-toggle";
 import { NotificationsModal } from "./notifications-modal";
 
-const navigation = [
-	{ name: "Feed", href: "/", icon: Home },
-	{ name: "Explore", href: "/commits", icon: Search },
-];
-
+/**
+ * Props para el componente Navbar
+ */
 interface NavbarProps {
 	initialUnreadCount: number;
 	user: UserType | null;
+	dict: any; // Diccionario de traducciones
+	lang: Locale; // Idioma actual
 }
 
-export function Navbar({ user, initialUnreadCount }: NavbarProps) {
+/**
+ * Componente Navbar con soporte para internacionalización
+ * Maneja la navegación, autenticación y cambio de idiomas
+ */
+export function Navbar({ user, initialUnreadCount, dict, lang }: NavbarProps) {
 	const pathname = usePathname();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const router = useRouter();
+
+	// Configuración de navegación con traducciones
+	const navigation = [
+		{ name: dict.navigation.home, href: `/${lang}`, icon: Home },
+		{ name: dict.navigation.commits, href: `/${lang}/commits`, icon: Search },
+	];
+
+	// Función para cambiar idioma
+	const changeLanguage = (newLang: Locale) => {
+		const currentPath = pathname.replace(`/${lang}`, "");
+		router.push(`/${newLang}${currentPath}`);
+	};
 
 	const handleSignOut = async () => {
 		await signOut();
@@ -84,6 +102,7 @@ export function Navbar({ user, initialUnreadCount }: NavbarProps) {
 						{/* User Menu or Auth Buttons */}
 						{user ? (
 							<div className="flex items-center gap-2">
+								<LanguageSelector dict={dict} lang={lang} />
 								<NotificationsModal initialUnreadCount={initialUnreadCount} /> {/* Notifications Modal */}
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>
@@ -105,21 +124,22 @@ export function Navbar({ user, initialUnreadCount }: NavbarProps) {
 										</div>
 										<DropdownMenuSeparator />
 										<DropdownMenuItem asChild>
-											<Link className="flex items-center gap-2" href={`/dev/${user.id}`}>
+											<Link className="flex items-center gap-2" href={`/${lang}/dev/${user.id}`}>
 												<User className="h-4 w-4" />
-												Mi Profile
+												{dict.navigation.profile}
 											</Link>
 										</DropdownMenuItem>
 										<DropdownMenuItem asChild>
-											<Link className="flex items-center gap-2" href="/profile">
+											<Link className="flex items-center gap-2" href={`/${lang}/profile`}>
 												<Settings className="h-4 w-4" />
-												Settings
+												{dict.navigation.settings}
 											</Link>
 										</DropdownMenuItem>
+
 										<DropdownMenuSeparator />
 										<DropdownMenuItem className="flex items-center gap-2 text-red-600 focus:text-red-600" onClick={handleSignOut}>
 											<LogOut className="h-4 w-4" />
-											Sign Out
+											{dict.auth.signOut}
 										</DropdownMenuItem>
 									</DropdownMenuContent>
 								</DropdownMenu>
@@ -177,6 +197,11 @@ export function Navbar({ user, initialUnreadCount }: NavbarProps) {
 										</div>
 									)}
 
+									{/* Language Selector */}
+									<div className="flex justify-center">
+										<LanguageSelector dict={dict} lang={lang} />
+									</div>
+
 									{/* Navigation Links */}
 									<div className="space-y-2">
 										{navigation.map((item) => {
@@ -204,19 +229,19 @@ export function Navbar({ user, initialUnreadCount }: NavbarProps) {
 											<div className="space-y-2 border-t pt-6">
 												<Link
 													className="flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-muted-foreground text-sm transition-colors hover:bg-muted"
-													href={`/dev/${user.id}`}
+													href={`/${lang}/dev/${user.id}`}
 													onClick={() => setMobileMenuOpen(false)}
 												>
 													<User className="h-4 w-4" />
-													Mi Profile
+													{dict.navigation.profile}
 												</Link>
 												<Link
 													className="flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-muted-foreground text-sm transition-colors hover:bg-muted"
-													href="/profile"
+													href={`/${lang}/profile`}
 													onClick={() => setMobileMenuOpen(false)}
 												>
 													<Settings className="h-4 w-4" />
-													Settings
+													{dict.navigation.settings}
 												</Link>
 											</div>
 
@@ -227,7 +252,7 @@ export function Navbar({ user, initialUnreadCount }: NavbarProps) {
 													variant="ghost"
 												>
 													<LogOut className="h-4 w-4" />
-													Sign Out
+													{dict.auth.signOut}
 												</Button>
 											</div>
 										</>

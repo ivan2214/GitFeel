@@ -1,0 +1,137 @@
+{
+	"common": {
+		"loading": "Loading...",
+		"error": "Error",
+		"success": "Success",
+		"cancel": "Cancel",
+		"save": "Save",
+		"delete": "Delete",
+		"edit": "Edit",
+		"close": "Close",
+		"back": "Back",
+		"next": "Next",
+		"previous": "Previous",
+		"search": "Search",
+		"filter": "Filter",
+		"sort": "Sort",
+		"share": "Share",
+		"copy": "Copy",
+		"copied": "Copied",
+		"view": "View",
+		"download": "Download",
+		"upload": "Upload",
+		"submit": "Submit",
+		"confirm": "Confirm",
+		"yes": "Yes",
+		"no": "No"
+	},
+	"navigation": {
+		"home": "Home",
+		"profile": "Profile",
+		"commits": "Commits",
+		"notifications": "Notifications",
+		"settings": "Settings",
+		"logout": "Logout",
+		"login": "Login",
+		"register": "Register"
+	},
+	"auth": {
+		"login": {
+			"title": "Sign in",
+			"subtitle": "Enter your account",
+			"email": "Email",
+			"password": "Password",
+			"forgotPassword": "Forgot your password?",
+			"noAccount": "Don't have an account?",
+			"signUp": "Sign up",
+			"button": "Sign in"
+		},
+		"register": {
+			"title": "Create account",
+			"subtitle": "Join the developer community",
+			"name": "Full name",
+			"username": "Username",
+			"email": "Email",
+			"password": "Password",
+			"confirmPassword": "Confirm password",
+			"hasAccount": "Already have an account?",
+			"signIn": "Sign in",
+			"button": "Create account"
+		}
+	},
+	"commits": {
+		"title": "Emotional Commits",
+		"subtitle": "Share your development experiences",
+		"create": "Create commit",
+		"placeholder": "How do you feel about your code today?",
+		"mood": {
+			"happy": "Happy",
+			"frustrated": "Frustrated",
+			"excited": "Excited",
+			"confused": "Confused",
+			"proud": "Proud",
+			"tired": "Tired"
+		},
+		"actions": {
+			"like": "Like",
+			"comment": "Comment",
+			"share": "Share",
+			"report": "Report"
+		},
+		"empty": {
+			"title": "No commits yet",
+			"description": "Be the first to share your development experience"
+		}
+	},
+	"profile": {
+		"title": "Profile",
+		"edit": "Edit profile",
+		"followers": "Followers",
+		"following": "Following",
+		"commits": "Commits",
+		"joined": "Joined",
+		"bio": "Bio",
+		"location": "Location",
+		"website": "Website",
+		"github": "GitHub",
+		"twitter": "Twitter"
+	},
+	"notifications": {
+		"title": "Notifications",
+		"markAllRead": "Mark all as read",
+		"empty": {
+			"title": "No notifications",
+			"description": "We'll notify you when something important happens"
+		},
+		"types": {
+			"like": "liked your commit",
+			"comment": "commented on your commit",
+			"follow": "started following you",
+			"mention": "mentioned you in a commit"
+		}
+	},
+	"search": {
+		"placeholder": "Search commits, users...",
+		"results": "Search results",
+		"noResults": "No results found",
+		"filters": {
+			"all": "All",
+			"commits": "Commits",
+			"users": "Users",
+			"recent": "Recent",
+			"popular": "Popular"
+		}
+	},
+	"errors": {
+		"generic": "Something went wrong. Please try again.",
+		"network": "Connection error. Check your internet.",
+		"unauthorized": "You don't have permission to perform this action.",
+		"notFound": "The content you're looking for doesn't exist.",
+		"validation": "Please check the entered data."
+	},
+	"meta": {
+		"title": "gitfeel - Social network for developers",
+		"description": "The social network where developers share their emotional commits, frustrations, achievements and programming doubts.",
+		"keywords": "developers, programmers, social network, git, commits, code, programming"
+	}
+}

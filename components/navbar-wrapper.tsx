@@ -2,13 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/navbar";
+import type { Locale } from "@/lib/dictionaries";
 import type { User } from "@/lib/types";
 
+/**
+ * Props para el componente NavbarWrapper
+ */
 interface NavbarWrapperProps {
 	user: User | null;
+	dict: any; // Diccionario de traducciones
+	lang: Locale; // Idioma actual
 }
 
-export function NavbarWrapper({ user }: NavbarWrapperProps) {
+/**
+ * Wrapper del Navbar que maneja el estado de notificaciones no leídas
+ * y proporciona las traducciones al componente Navbar
+ */
+export function NavbarWrapper({ user, dict, lang }: NavbarWrapperProps) {
 	const [unreadCount, setUnreadCount] = useState(0);
 
 	useEffect(() => {
@@ -34,5 +44,5 @@ export function NavbarWrapper({ user }: NavbarWrapperProps) {
 		return () => clearInterval(interval);
 	}, [user]);
 
-	return <Navbar initialUnreadCount={unreadCount} user={user} />;
+	return <Navbar dict={dict} initialUnreadCount={unreadCount} lang={lang} user={user} />;
 }
