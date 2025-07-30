@@ -90,8 +90,8 @@ export default async function HomePage() {
 						</div>
 
 						{commits.length === 0 && (
-							<Card className="border-gray-700 bg-gray-800">
-								<CardContent className="p-12 text-center text-white">
+							<Card className="commit-card">
+								<CardContent className="p-12 text-center">
 									<p className="text-muted-foreground">No hay commits aún. ¡Sé el primero en compartir!</p>
 								</CardContent>
 							</Card>
@@ -101,9 +101,9 @@ export default async function HomePage() {
 					{/* Sidebar */}
 					<div className="space-y-6">
 						{!user && (
-							<Card className="border-gray-700 bg-gray-800">
+							<Card className="commit-card">
 								<CardHeader>
-									<CardTitle className="flex items-center gap-2 text-white">
+									<CardTitle className="flex items-center gap-2">
 										<Users className="h-5 w-5" />
 										Únete a gitfeel
 									</CardTitle>
@@ -123,9 +123,9 @@ export default async function HomePage() {
 						)}
 
 						{/* Trending Tags */}
-						<Card className="border-gray-700 bg-gray-800">
+						<Card className="commit-card">
 							<CardHeader>
-								<CardTitle className="flex items-center gap-2 text-white">
+								<CardTitle className="flex items-center gap-2">
 									<Hash className="h-5 w-5" />
 									Tags Trending
 								</CardTitle>
@@ -145,9 +145,9 @@ export default async function HomePage() {
 						</Card>
 
 						{/* Active Developers */}
-						<Card className="border-gray-700 bg-gray-800">
+						<Card className="commit-card">
 							<CardHeader>
-								<CardTitle className="flex items-center gap-2 text-white">
+								<CardTitle className="flex items-center gap-2">
 									<TrendingUp className="h-5 w-5" />
 									Developers Activos
 								</CardTitle>
@@ -159,11 +159,11 @@ export default async function HomePage() {
 										href={`/dev/${user.id}`}
 										key={user.id}
 									>
-										<div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-500 font-semibold text-sm text-white">
+										<div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-500 font-semibold text-sm">
 											{user.name?.charAt(0).toUpperCase()}
 										</div>
 										<div className="min-w-0 flex-1">
-											<p className="truncate font-medium text-white">{user.name}</p>
+											<p className="truncate font-medium">{user.name}</p>
 											<p className="text-muted-foreground text-sm">{user._count.commits} commits</p>
 										</div>
 									</Link>

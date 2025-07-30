@@ -1,6 +1,6 @@
 "use client";
 
-import { Chrome, Github, LogIn, MessageSquare, UserPlus } from "lucide-react";
+import { Chrome, Code2, Github, LogIn, MessageSquare, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -30,41 +30,56 @@ export function AuthModals() {
 				<DialogTrigger asChild>
 					<Button className="flex items-center gap-2" size="sm" variant="ghost">
 						<LogIn className="h-4 w-4" />
-						<span className="hidden sm:inline">Iniciar Sesión</span>
+						<span className="hidden sm:inline">Sign In</span>
 					</Button>
 				</DialogTrigger>
 				<DialogContent className="sm:max-w-md">
-					<DialogHeader>
-						<DialogTitle className="text-center">Iniciar Sesión</DialogTitle>
-						<DialogDescription className="text-center">Elige tu método preferido para acceder a gitfeel</DialogDescription>
+					<DialogHeader className="text-center">
+						<div className="mb-4 flex justify-center">
+							<div className="relative">
+								<div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 opacity-75 blur"></div>
+								<div className="relative flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600">
+									<Code2 className="h-6 w-6 text-white" />
+								</div>
+							</div>
+						</div>
+						<DialogTitle>Welcome back to gitfeel</DialogTitle>
+						<DialogDescription>Sign in to share your developer feelings and connect with the community</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 py-4">
-						<Button className="flex w-full items-center gap-2" onClick={() => handleSocialSignIn("github")} variant="outline">
-							<Github className="h-4 w-4" />
-							Continuar con GitHub
+						<Button
+							className="flex w-full items-center gap-3 bg-[#24292e] text-white hover:bg-[#1a1e22]"
+							onClick={() => handleSocialSignIn("github")}
+							variant="outline"
+						>
+							<Github className="h-5 w-5" />
+							Continue with GitHub
 						</Button>
 
-						<Button className="flex w-full items-center gap-2" onClick={() => handleSocialSignIn("google")} variant="outline">
-							<Chrome className="h-4 w-4" />
-							Continuar con Google
+						<Button className="flex w-full items-center gap-3" onClick={() => handleSocialSignIn("google")} variant="outline">
+							<Chrome className="h-5 w-5" />
+							Continue with Google
 						</Button>
 
-						<Button className="flex w-full items-center gap-2" onClick={() => handleSocialSignIn("discord")} variant="outline">
-							<MessageSquare className="h-4 w-4" />
-							Continuar con Discord
+						<Button
+							className="flex w-full items-center gap-3 bg-[#5865f2] text-white hover:bg-[#4752c4]"
+							onClick={() => handleSocialSignIn("discord")}
+							variant="outline"
+						>
+							<MessageSquare className="h-5 w-5" />
+							Continue with Discord
 						</Button>
 
-						<div className="text-center text-muted-foreground text-sm">
-							¿No tienes cuenta?{" "}
+						<div className="border-t pt-4 text-center text-muted-foreground text-sm">
+							Don't have an account?{" "}
 							<Button
-								className="text-primary hover:underline"
+								className="font-medium text-primary hover:underline"
 								onClick={() => {
 									setSignInOpen(false);
 									setSignUpOpen(true);
 								}}
-								variant="link"
 							>
-								Regístrate aquí
+								Sign up here
 							</Button>
 						</div>
 					</div>
@@ -74,51 +89,64 @@ export function AuthModals() {
 			{/* Sign Up Modal */}
 			<Dialog onOpenChange={setSignUpOpen} open={signUpOpen}>
 				<DialogTrigger asChild>
-					<Button className="flex items-center gap-2" size="sm">
+					<Button className="gitfeel-button flex items-center gap-2" size="sm">
 						<UserPlus className="h-4 w-4" />
-						<span className="hidden sm:inline">Registrarse</span>
+						<span className="hidden sm:inline">Sign Up</span>
 					</Button>
 				</DialogTrigger>
 				<DialogContent className="sm:max-w-md">
-					<DialogHeader>
-						<DialogTitle className="text-center">Crear Cuenta</DialogTitle>
-						<DialogDescription className="text-center">
-							Únete a la comunidad de developers y comparte tus commits emocionales
-						</DialogDescription>
+					<DialogHeader className="text-center">
+						<div className="mb-4 flex justify-center">
+							<div className="relative">
+								<div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 opacity-75 blur"></div>
+								<div className="relative flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600">
+									<Code2 className="h-6 w-6 text-white" />
+								</div>
+							</div>
+						</div>
+						<DialogTitle>Join the gitfeel community</DialogTitle>
+						<DialogDescription>Connect with developers worldwide and share your coding journey</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 py-4">
-						<Button className="flex w-full items-center gap-2" onClick={() => handleSocialSignIn("github")} variant="outline">
-							<Github className="h-4 w-4" />
-							Registrarse con GitHub
+						<Button
+							className="flex w-full items-center gap-3 bg-[#24292e] text-white hover:bg-[#1a1e22]"
+							onClick={() => handleSocialSignIn("github")}
+							variant="outline"
+						>
+							<Github className="h-5 w-5" />
+							Sign up with GitHub
 						</Button>
 
-						<Button className="flex w-full items-center gap-2" onClick={() => handleSocialSignIn("google")} variant="outline">
-							<Chrome className="h-4 w-4" />
-							Registrarse con Google
+						<Button className="flex w-full items-center gap-3" onClick={() => handleSocialSignIn("google")} variant="outline">
+							<Chrome className="h-5 w-5" />
+							Sign up with Google
 						</Button>
 
-						<Button className="flex w-full items-center gap-2" onClick={() => handleSocialSignIn("discord")} variant="outline">
-							<MessageSquare className="h-4 w-4" />
-							Registrarse con Discord
+						<Button
+							className="flex w-full items-center gap-3 bg-[#5865f2] text-white hover:bg-[#4752c4]"
+							onClick={() => handleSocialSignIn("discord")}
+							variant="outline"
+						>
+							<MessageSquare className="h-5 w-5" />
+							Sign up with Discord
 						</Button>
 
-						<div className="text-center text-muted-foreground text-sm">
-							¿Ya tienes cuenta?{" "}
+						<div className="border-t pt-4 text-center text-muted-foreground text-sm">
+							Already have an account?{" "}
 							<Button
-								className="text-primary hover:underline"
+								className="font-medium text-primary hover:underline"
 								onClick={() => {
 									setSignUpOpen(false);
 									setSignInOpen(true);
 								}}
-								variant="link"
 							>
-								Inicia sesión
+								Sign in here
 							</Button>
 						</div>
 					</div>
 
 					<div className="border-t pt-4 text-center text-muted-foreground text-xs">
-						Al registrarte, aceptas nuestros términos de servicio y política de privacidad.
+						By signing up, you agree to our terms of service and privacy policy.
 					</div>
 				</DialogContent>
 			</Dialog>

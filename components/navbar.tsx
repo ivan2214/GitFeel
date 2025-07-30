@@ -2,7 +2,7 @@
 
 import { Code2, Home, LogOut, Menu, Search, Settings, User } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { AuthModals } from "@/components/auth-modals";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,9 +22,12 @@ const navigation = [
 export function Navbar({ user }: { user: UserType | null }) {
 	const pathname = usePathname();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const router = useRouter();
 
 	const handleSignOut = async () => {
 		await signOut();
+		setMobileMenuOpen(false);
+		router.refresh();
 	};
 
 	return (

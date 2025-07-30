@@ -1,16 +1,16 @@
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { Calendar, GitCommit, Github, LinkIcon, MapPin, Twitter } from "lucide-react";
+import { Calendar, Code, GitCommit, Github, LinkIcon, MapPin, Twitter, Users } from "lucide-react";
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CommitCard } from "@/components/commit-card";
+import { GitfeelCommit } from "@/components/gitfeel-commit";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { getCurrentUser } from "@/data/user";
 import { toggleFollow } from "@/lib/actions/users";
-
 import prisma from "@/lib/prisma";
 
 interface DevProfilePageProps {
@@ -112,52 +112,80 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 				<div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
 					{/* Profile Sidebar */}
 					<div className="space-y-6">
-						<Card>
+						<Card className="commit-card">
+							<div className="commit-header">
+								<Code className="h-3 w-3" />
+								<span>developer profile</span>
+								<span className="ml-auto">@{user.username}</span>
+							</div>
 							<CardContent className="p-6">
 								<div className="space-y-4 text-center">
-									<Avatar className="mx-auto h-24 w-24">
-										<AvatarImage src={user.image || ""} />
-										<AvatarFallback className="text-2xl">{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
-									</Avatar>
+									<div className="relative inline-block">
+										<div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 opacity-75 blur"></div>
+										<Avatar className="relative mx-auto h-24 w-24 ring-4 ring-primary/20">
+											<AvatarImage src={user.image || ""} />
+											<AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-2xl text-white">
+												{user.name?.charAt(0).toUpperCase()}
+											</AvatarFallback>
+										</Avatar>
+									</div>
 
 									<div>
 										<h1 className="font-bold text-xl">{user.name}</h1>
 										<p className="text-muted-foreground">@{user.username}</p>
 									</div>
 
-									{user.bio && <p className="text-center text-sm">{user.bio}</p>}
+									{user.bio && (
+										<div className="code-block text-left">
+											<div className="mb-2 flex items-center gap-2 text-cyan-400">
+												<span className="text-green-400">$</span>
+												<span className="text-sm">cat README.md</span>
+											</div>
+											<p className="border-blue-500/30 border-l-2 pl-4 text-slate-100">{user.bio}</p>
+										</div>
+									)}
 
-									<div className="flex justify-center gap-6 text-sm">
+									{/* Stats */}
+									<div className="grid grid-cols-3 gap-4 rounded-lg bg-muted/30 p-4">
 										<div className="text-center">
-											<div className="font-semibold">{user._count.commits}</div>
-											<div className="text-muted-foreground">Commits</div>
+											<div className="font-semibold text-primary">{user._count.commits}</div>
+											<div className="text-muted-foreground text-xs">Commits</div>
 										</div>
 										<div className="text-center">
-											<div className="font-semibold">{user._count.following}</div>
-											<div className="text-muted-foreground">Siguiendo</div>
+											<div className="font-semibold text-primary">{user._count.following}</div>
+											<div className="text-muted-foreground text-xs">Following</div>
 										</div>
 										<div className="text-center">
-											<div className="font-semibold">{user._count.followers}</div>
-											<div className="text-muted-foreground">Seguidores</div>
+											<div className="font-semibold text-primary">{user._count.followers}</div>
+											<div className="text-muted-foreground text-xs">Followers</div>
 										</div>
 									</div>
 
-									{!isOwnProfile && currentUser && (
+									{/* Action Buttons */}
+									{!isOwnProfile && user && (
 										<form
 											action={async () => {
+												"use server";
 												await toggleFollow(user.id);
 											}}
 										>
-											<input name="userId" type="hidden" value={user.id} />
-											<Button className="w-full" type="submit" variant={isFollowing ? "outline" : "default"}>
-												{isFollowing ? "Untrack" : "Clone"}
+											<Input name="userId" type="hidden" value={user.id} />
+											<Button
+												className={`w-full ${isFollowing ? "bg-muted text-foreground hover:bg-muted/80" : "gitfeel-button"}`}
+												type="submit"
+											>
+												<Users className="mr-2 h-4 w-4" />
+												{isFollowing ? "Unfollow" : "Follow"}
 											</Button>
 										</form>
 									)}
 
 									{isOwnProfile && (
-										<Button asChild className="w-full">
-											<Link href="/profile">Editar Perfil</Link>
+										<Button asChild className="gitfeel-button w-full">
+											<Link href="/profile">
+												<Code className="mr-2 h-4 w-4" />
+												Edit Profile
+											</Link>
 										</Button>
 									)}
 								</div>
@@ -174,23 +202,28 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 									{user.website && (
 										<div className="flex items-center gap-2 text-muted-foreground">
 											<LinkIcon className="h-4 w-4" />
-											<a className="truncate hover:text-blue-500" href={user.website} rel="noopener noreferrer" target="_blank">
+											<Link
+												className="truncate transition-colors hover:text-primary"
+												href={user.website}
+												rel="noopener noreferrer"
+												target="_blank"
+											>
 												{user.website}
-											</a>
+											</Link>
 										</div>
 									)}
 
 									{user.githubUrl && (
 										<div className="flex items-center gap-2 text-muted-foreground">
 											<Github className="h-4 w-4" />
-											<a
-												className="truncate hover:text-blue-500"
+											<Link
+												className="truncate transition-colors hover:text-primary"
 												href={user.githubUrl}
 												rel="noopener noreferrer"
 												target="_blank"
 											>
 												GitHub
-											</a>
+											</Link>
 										</div>
 									)}
 
@@ -198,7 +231,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 										<div className="flex items-center gap-2 text-muted-foreground">
 											<Twitter className="h-4 w-4" />
 											<a
-												className="truncate hover:text-blue-500"
+												className="truncate transition-colors hover:text-primary"
 												href={user.twitterUrl}
 												rel="noopener noreferrer"
 												target="_blank"
@@ -210,7 +243,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 
 									<div className="flex items-center gap-2 text-muted-foreground">
 										<Calendar className="h-4 w-4" />
-										Se unió{" "}
+										Joined{" "}
 										{formatDistanceToNow(new Date(user.createdAt), {
 											addSuffix: true,
 											locale: es,
@@ -223,31 +256,36 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 
 					{/* Commits Feed */}
 					<div className="space-y-6 lg:col-span-2">
-						<Card>
-							<CardHeader>
-								<CardTitle className="flex items-center gap-2">
-									<GitCommit className="h-5 w-5" />
-									Commits de {user.name}
-								</CardTitle>
-							</CardHeader>
+						<Card className="commit-card">
+							<div className="commit-header">
+								<GitCommit className="h-3 w-3" />
+								<span>recent commits</span>
+								<span className="ml-auto">{user.commits.length} commits</span>
+							</div>
 						</Card>
 
 						<div className="space-y-4">
 							{user.commits.map((commit) => (
-								<CommitCard commit={commit} key={commit.id} user={currentUser} />
+								<GitfeelCommit commit={commit} key={commit.id} user={user} />
 							))}
 						</div>
 
 						{user.commits.length === 0 && (
-							<Card>
+							<Card className="commit-card">
 								<CardContent className="p-12 text-center">
+									<div className="code-block mb-4">
+										<p className="text-slate-400">$ git log --author="{user.username}"</p>
+										<p className="text-yellow-400">warning: no commits found</p>
+									</div>
 									<GitCommit className="mx-auto mb-4 h-12 w-12 opacity-50" />
 									<p className="text-muted-foreground">
-										{isOwnProfile ? "Aún no has hecho ningún commit. ¡Comparte algo!" : `${user.name} aún no ha hecho commits.`}
+										{isOwnProfile
+											? "You haven't made any commits yet. Share your first developer feeling!"
+											: `${user.name} hasn't made any commits yet.`}
 									</p>
 									{isOwnProfile && (
-										<Button asChild className="mt-4">
-											<Link href="/">Hacer mi primer commit</Link>
+										<Button asChild className="gitfeel-button mt-4">
+											<Link href="/">Make your first commit</Link>
 										</Button>
 									)}
 								</CardContent>

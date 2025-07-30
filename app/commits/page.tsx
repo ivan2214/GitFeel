@@ -1,10 +1,11 @@
-import { Filter, Search } from "lucide-react";
+import { Code, Filter, Search, Sparkles } from "lucide-react";
 import Link from "next/link";
 import type { Prisma } from "@/app/generated/prisma/index";
-import { TerminalCommit } from "@/components/terminal-commit";
+import { GitfeelCommit } from "@/components/gitfeel-commit";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getCurrentUser } from "@/data/user";
@@ -91,41 +92,51 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 	const activeTags = searchParams.tags?.split(",").map((tag) => tag.trim()) || [];
 
 	return (
-		<div className="min-h-screen bg-gray-900">
+		<div className="min-h-screen bg-background">
 			<div className="container mx-auto px-4 py-8">
 				<div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
 					{/* Filters Sidebar */}
 					<div className="space-y-6">
-						<Card className="border-gray-700 bg-gray-800">
-							<CardContent className="p-6">
-								<h2 className="mb-4 flex items-center gap-2 font-semibold text-white">
+						<Card className="commit-card">
+							<CardHeader>
+								<CardTitle className="flex items-center gap-2">
 									<Filter className="h-4 w-4" />
-									Filtros
-								</h2>
-
-								<div className="space-y-4">
-									<div>
-										<Label className="mb-2 block font-medium text-sm">Buscar en commits</Label>
-										<div className="relative">
-											<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
-											<Input className="pl-10" defaultValue={searchParams.query} placeholder="Buscar..." />
-										</div>
+									Search & Filter
+								</CardTitle>
+							</CardHeader>
+							<CardContent className="space-y-4">
+								<div>
+									<Label className="mb-2 block font-medium text-sm">Search commits</Label>
+									<div className="relative">
+										<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
+										<Input
+											className="border-border bg-muted/50 pl-10"
+											defaultValue={searchParams.query}
+											placeholder="Search developer feelings..."
+										/>
 									</div>
+								</div>
 
-									<div>
-										<Label className="mb-2 block font-medium text-sm">Tags populares</Label>
-										<div className="flex flex-wrap gap-2">
-											{allTags.map((tag) => (
-												<Link href={`/commits?tags=${tag.name}`} key={tag.id}>
-													<Badge
-														className="cursor-pointer hover:bg-primary/10"
-														variant={activeTags.includes(tag.name) ? "default" : "outline"}
-													>
-														#{tag.name} ({tag._count.commits})
-													</Badge>
-												</Link>
-											))}
-										</div>
+								<div>
+									<Label className="mb-2 flex items-center gap-2 font-medium text-sm">
+										<Sparkles className="h-4 w-4" />
+										Popular tags
+									</Label>
+									<div className="flex flex-wrap gap-2">
+										{allTags.map((tag) => (
+											<Link href={`/commits?tags=${tag.name}`} key={tag.id}>
+												<Badge
+													className={`cursor-pointer transition-colors ${
+														activeTags.includes(tag.name)
+															? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+															: "border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-400 hover:border-blue-500/50"
+													}`}
+													variant={activeTags.includes(tag.name) ? "default" : "outline"}
+												>
+													#{tag.name} ({tag._count.commits})
+												</Badge>
+											</Link>
+										))}
 									</div>
 								</div>
 							</CardContent>
@@ -134,28 +145,35 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 
 					{/* Main Content */}
 					<div className="space-y-6 lg:col-span-3">
-						<div className="flex items-center justify-between">
-							<div>
-								<h1 className="font-bold text-2xl">Explorar Commits</h1>
-								<p className="text-muted-foreground">
+						<div className="commit-card">
+							<div className="commit-header">
+								<Code className="h-3 w-3" />
+								<span>explore commits</span>
+								<span className="ml-auto">
 									{searchParams.tags || searchParams.query
-										? `Resultados filtrados (${commits.length})`
-										: `Todos los commits (${commits.length})`}
+										? `${commits.length} filtered results`
+										: `${commits.length} total commits`}
+								</span>
+							</div>
+							<div className="commit-content">
+								<h1 className="mb-2 font-bold text-2xl">Explore Developer Feelings</h1>
+								<p className="text-muted-foreground">
+									Discover what developers are thinking, feeling, and building around the world.
 								</p>
 							</div>
 						</div>
 
 						{/* Active Filters */}
 						{(activeTags.length > 0 || searchParams.query) && (
-							<Card className="border-gray-700 bg-gray-800">
+							<Card className="commit-card">
 								<CardContent className="p-4">
 									<div className="flex flex-wrap items-center gap-2">
-										<span className="font-medium text-sm">Filtros activos:</span>
+										<span className="font-medium text-sm">Active filters:</span>
 										{activeTags.map((tag) => (
-											<Badge key={tag} variant="secondary">
+											<Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white" key={tag}>
 												#{tag}
 												<Link
-													className="ml-1 hover:text-red-500"
+													className="ml-1 hover:text-red-300"
 													href={`/commits?tags=${activeTags.filter((t) => t !== tag).join(",")}`}
 												>
 													×
@@ -163,15 +181,15 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 											</Badge>
 										))}
 										{searchParams.query && (
-											<Badge variant="secondary">
+											<Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
 												"{searchParams.query}"
-												<Link className="ml-1 hover:text-red-500" href="/commits">
+												<Link className="ml-1 hover:text-red-300" href="/commits">
 													×
 												</Link>
 											</Badge>
 										)}
-										<Link className="text-blue-500 text-sm hover:underline" href="/commits">
-											Limpiar filtros
+										<Link className="text-primary text-sm hover:underline" href="/commits">
+											Clear all filters
 										</Link>
 									</div>
 								</CardContent>
@@ -181,16 +199,20 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 						{/* Commits List */}
 						<div className="space-y-4">
 							{commits.map((commit) => (
-								<TerminalCommit _currentUserId={user?.id} commit={commit} key={commit.id} />
+								<GitfeelCommit commit={commit} key={commit.id} user={user} />
 							))}
 						</div>
 
 						{commits.length === 0 && (
-							<Card className="border-gray-700 bg-gray-800">
+							<Card className="commit-card">
 								<CardContent className="p-12 text-center">
-									<p className="text-muted-foreground">No se encontraron commits con estos filtros.</p>
-									<Button asChild className="mt-4">
-										<Link href="/commits">Ver todos los commits</Link>
+									<div className="code-block mb-4">
+										<p className="text-slate-400">$ git log --grep="{searchParams.query || searchParams.tags}"</p>
+										<p className="text-red-400">fatal: no commits found</p>
+									</div>
+									<p className="mb-4 text-muted-foreground">No commits match your search criteria.</p>
+									<Button asChild className="gitfeel-button">
+										<Link href="/commits">View all commits</Link>
 									</Button>
 								</CardContent>
 							</Card>
