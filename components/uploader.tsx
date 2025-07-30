@@ -31,20 +31,14 @@ export interface UploadedFile {
 	isMainImage: boolean;
 }
 
-const isUploadedFile = (
-	val: UploadedFile | UploadedFile[] | null | undefined,
-): val is UploadedFile => !!val && !Array.isArray(val);
+const isUploadedFile = (val: UploadedFile | UploadedFile[] | null | undefined): val is UploadedFile => !!val && !Array.isArray(val);
 
-const isValueArray = (
-	val: UploadedFile | UploadedFile[] | null | undefined,
-): val is UploadedFile[] => Array.isArray(val);
+const isValueArray = (val: UploadedFile | UploadedFile[] | null | undefined): val is UploadedFile[] => Array.isArray(val);
 
 const uploadFile = async (
 	file: File,
 	isMainImage: boolean,
-	uploadToS3: (
-		file: File,
-	) => Promise<{ key?: string; presignedUrl?: string; error?: string }>,
+	uploadToS3: (file: File) => Promise<{ key?: string; presignedUrl?: string; error?: string }>,
 	setUploadProgress: (progress: number) => void,
 ): Promise<UploadedFile | null> => {
 	try {
@@ -117,10 +111,7 @@ export function Uploader({
 	const [uploadProgress, setUploadProgress] = useState(0);
 	const { uploadToS3, deleteFromS3 } = useS3Uploader();
 
-	const canUploadMoreFiles = (
-		value: UploadedFile | UploadedFile[] | null | undefined,
-		max = maxFiles,
-	): boolean => {
+	const canUploadMoreFiles = (value: UploadedFile | UploadedFile[] | null | undefined, max = maxFiles): boolean => {
 		if (!value) return true;
 		if (Array.isArray(value)) return value.length < max;
 		return max > 1 ? 1 < max : false;
@@ -147,17 +138,12 @@ export function Uploader({
 		async (acceptedFiles: File[]) => {
 			if (disabled) return;
 
-			if (
-				(isValueArray(value) ? value.length : 0) + acceptedFiles.length >
-				maxFiles
-			) {
+			if ((isValueArray(value) ? value.length : 0) + acceptedFiles.length > maxFiles) {
 				toast.error(`Máximo ${maxFiles} archivos permitidos`);
 				return;
 			}
 
-			const oversized = acceptedFiles.filter(
-				(f) => f.size > maxSize * 1024 * 1024,
-			);
+			const oversized = acceptedFiles.filter((f) => f.size > maxSize * 1024 * 1024);
 			if (oversized.length > 0) {
 				toast.error(`Archivo(s) muy grande(s). Máximo ${maxSize}MB`);
 				return;
@@ -174,12 +160,7 @@ export function Uploader({
 					// solo es principal si no tiene nada el array de imagenes cargadas y el index es 0
 					const isMainImage = !value.length && i === 0;
 
-					const result = await uploadFile(
-						acceptedFiles[i],
-						isMainImage,
-						uploadToS3,
-						setUploadProgress,
-					);
+					const result = await uploadFile(acceptedFiles[i], isMainImage, uploadToS3, setUploadProgress);
 
 					if (result) uploadedArray?.push(result);
 				}
@@ -191,12 +172,7 @@ export function Uploader({
 			} else {
 				const isMainImage = !value;
 
-				uploaded = await uploadFile(
-					acceptedFiles[0],
-					isMainImage,
-					uploadToS3,
-					setUploadProgress,
-				);
+				uploaded = await uploadFile(acceptedFiles[0], isMainImage, uploadToS3, setUploadProgress);
 
 				onChange(uploaded);
 				toast.success("Archivo subido");
@@ -210,14 +186,9 @@ export function Uploader({
 
 	const rejectedFiles = useCallback((fileRejection: FileRejection[]) => {
 		if (fileRejection.length) {
-			const tooMany = fileRejection.find(
-				(r) => r.errors[0].code === "too-many-files",
-			);
-			const tooBig = fileRejection.find(
-				(r) => r.errors[0].code === "file-too-large",
-			);
-			if (tooMany)
-				toast.error("Demasiados archivos. Solo se permite uno por vez.");
+			const tooMany = fileRejection.find((r) => r.errors[0].code === "too-many-files");
+			const tooBig = fileRejection.find((r) => r.errors[0].code === "file-too-large");
+			if (tooMany) toast.error("Demasiados archivos. Solo se permite uno por vez.");
 			if (tooBig) toast.error("Archivo demasiado grande. Máximo 10MB.");
 		}
 	}, []);
@@ -243,9 +214,7 @@ export function Uploader({
 		try {
 			await deleteFromS3(keyToRemove);
 			if (isValueArray(value)) {
-				const newValuesWithoutRemoved = value.filter(
-					(file) => file.key !== keyToRemove,
-				);
+				const newValuesWithoutRemoved = value.filter((file) => file.key !== keyToRemove);
 				// actualizar el isMainImage a la primera imagen de la lista
 				if (newValuesWithoutRemoved.length > 0) {
 					const firstFile = newValuesWithoutRemoved[0];
@@ -272,10 +241,7 @@ export function Uploader({
 	};
 
 	const isImage = (file: UploadedFile) => {
-		return (
-			file.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i) ||
-			file.url?.includes("image")
-		);
+		return file.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i) || file.url?.includes("image");
 	};
 
 	if (variant === "avatar") {
@@ -286,51 +252,44 @@ export function Uploader({
 						{...getRootProps()}
 						className={cn(
 							"h-32 w-32 cursor-pointer rounded-full border-2 border-dashed p-4 text-center transition-colors",
-							isDragActive
-								? "border-red-500 bg-red-50"
-								: "border-gray-300 hover:border-gray-400",
+							isDragActive ? "border-red-500 bg-red-50" : "border-gray-300 hover:border-gray-400",
 							disabled && "cursor-not-allowed opacity-50",
 						)}
 					>
 						<input {...getInputProps()} />
 						<Upload className="mx-auto mb-2 text-gray-400" />
-						<p className="text-gray-600 text-xs">
-							{placeholder || "Arrastra archivos o haz clic para seleccionar"}
-						</p>
+						<p className="text-gray-600 text-xs">{placeholder || "Arrastra archivos o haz clic para seleccionar"}</p>
 					</div>
 				)}
 
-				{uploading && <Progress value={uploadProgress} className="h-2" />}
+				{uploading && <Progress className="h-2" value={uploadProgress} />}
 
 				{isUploadedFile(value) && (
 					<Card className="w-fit">
 						<CardContent className="flex items-center gap-4">
 							<div className="group relative h-32 w-32">
 								<ImageWithSkeleton
-									src={value.url || "/placeholder.svg"}
 									alt={value.name || "Avatar"}
 									className="h-full min-h-32 w-full min-w-32 rounded-full border-4 border-gray-200"
+									src={value.url || "/placeholder.svg"}
 								/>
 								<AlertDialog>
 									<AlertDialogTrigger asChild>
 										<Button
-											type="button"
-											variant="destructive"
-											size="icon"
 											className="absolute top-0 right-0 h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
 											disabled={disabled}
+											size="icon"
+											type="button"
+											variant="destructive"
 										>
 											<X className="h-3 w-3" />
 										</Button>
 									</AlertDialogTrigger>
 									<AlertDialogContent>
 										<AlertDialogHeader>
-											<AlertDialogTitle>
-												Estas seguro de eliminar esta imagen?
-											</AlertDialogTitle>
+											<AlertDialogTitle>Estas seguro de eliminar esta imagen?</AlertDialogTitle>
 											<AlertDialogDescription>
-												Esta acción no se puede deshacer. Es permanente (no se
-												puede recuperar, deberas subir una nueva).
+												Esta acción no se puede deshacer. Es permanente (no se puede recuperar, deberas subir una nueva).
 											</AlertDialogDescription>
 										</AlertDialogHeader>
 										<AlertDialogFooter>
@@ -360,46 +319,29 @@ export function Uploader({
 						{...getRootProps()}
 						className={cn(
 							"cursor-pointer rounded-lg border-2 border-dashed p-4 text-center transition-colors",
-							isDragActive
-								? "border-red-500 bg-red-50"
-								: "border-gray-300 hover:border-gray-400",
+							isDragActive ? "border-red-500 bg-red-50" : "border-gray-300 hover:border-gray-400",
 							disabled && "cursor-not-allowed opacity-50",
 						)}
 					>
 						<input {...getInputProps()} />
 						<Upload className="mx-auto mb-2 h-6 w-6 text-gray-400" />
-						<p className="text-gray-600 text-sm">
-							{placeholder || "Arrastra archivos o haz clic para seleccionar"}
-						</p>
+						<p className="text-gray-600 text-sm">{placeholder || "Arrastra archivos o haz clic para seleccionar"}</p>
 					</div>
 				)}
 
 				{uploading && (
 					<div className="space-y-2">
-						<Progress value={uploadProgress} className="h-2" />
-						<p className="text-center text-gray-500 text-xs">
-							Subiendo... {uploadProgress}%
-						</p>
+						<Progress className="h-2" value={uploadProgress} />
+						<p className="text-center text-gray-500 text-xs">Subiendo... {uploadProgress}%</p>
 					</div>
 				)}
 
 				{isValueArray(value) && value?.length > 0 ? (
 					<div className="space-y-1">
 						{value?.map((file) => (
-							<div
-								key={file.key}
-								className="flex items-center justify-between rounded bg-gray-50 p-2"
-							>
-								<span className="truncate text-sm">
-									{file.name || "Archivo"}
-								</span>
-								<Button
-									type="button"
-									variant="ghost"
-									size="sm"
-									onClick={() => removeFile(file.key)}
-									disabled={disabled}
-								>
+							<div className="flex items-center justify-between rounded bg-gray-50 p-2" key={file.key}>
+								<span className="truncate text-sm">{file.name || "Archivo"}</span>
+								<Button disabled={disabled} onClick={() => removeFile(file.key)} size="sm" type="button" variant="ghost">
 									<X className="h-3 w-3" />
 								</Button>
 							</div>
@@ -408,20 +350,9 @@ export function Uploader({
 				) : (
 					isUploadedFile(value) && (
 						<div className="space-y-1">
-							<div
-								key={value.key}
-								className="flex items-center justify-between rounded bg-gray-50 p-2"
-							>
-								<span className="truncate text-sm">
-									{value.name || "Archivo"}
-								</span>
-								<Button
-									type="button"
-									variant="ghost"
-									size="sm"
-									onClick={() => removeFile(value.key)}
-									disabled={disabled}
-								>
+							<div className="flex items-center justify-between rounded bg-gray-50 p-2" key={value.key}>
+								<span className="truncate text-sm">{value.name || "Archivo"}</span>
+								<Button disabled={disabled} onClick={() => removeFile(value.key)} size="sm" type="button" variant="ghost">
 									<X className="h-3 w-3" />
 								</Button>
 							</div>
@@ -440,17 +371,13 @@ export function Uploader({
 						{...getRootProps()}
 						className={cn(
 							"cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors",
-							isDragActive
-								? "border-red-500 bg-red-50"
-								: "border-gray-300 hover:border-gray-400",
+							isDragActive ? "border-red-500 bg-red-50" : "border-gray-300 hover:border-gray-400",
 							disabled && "cursor-not-allowed opacity-50",
 						)}
 					>
 						<input {...getInputProps()} />
 						<Upload className="mx-auto mb-3 h-8 w-8 text-gray-400" />
-						<p className="mb-1 font-medium text-gray-700 text-sm">
-							{placeholder || "Subir archivos"}
-						</p>
+						<p className="mb-1 font-medium text-gray-700 text-sm">{placeholder || "Subir archivos"}</p>
 						<p className="text-gray-500 text-xs">
 							Máximo {maxFiles} archivos, {maxSize}MB cada uno
 						</p>
@@ -463,7 +390,7 @@ export function Uploader({
 							<div className="flex items-center gap-3">
 								<Loader2 className="h-4 w-4 animate-spin" />
 								<div className="flex-1">
-									<Progress value={uploadProgress} className="h-2" />
+									<Progress className="h-2" value={uploadProgress} />
 								</div>
 								<span className="text-gray-500 text-sm">{uploadProgress}%</span>
 							</div>
@@ -475,13 +402,13 @@ export function Uploader({
 					<Card>
 						<CardContent className="grid grid-cols-2 gap-2">
 							{value?.map((file) => (
-								<div key={file.key} className="group relative">
+								<div className="group relative" key={file.key}>
 									{isImage(file) ? (
 										<div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
 											<ImageWithSkeleton
-												src={file.url || "/placeholder.svg"}
 												alt={file.name || "Imagen"}
 												className="object-cover"
+												src={file.url || "/placeholder.svg"}
 											/>
 										</div>
 									) : (
@@ -492,23 +419,20 @@ export function Uploader({
 									<AlertDialog>
 										<AlertDialogTrigger asChild>
 											<Button
-												type="button"
-												variant="destructive"
-												size="icon"
 												className="absolute top-0 right-0 h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
 												disabled={disabled}
+												size="icon"
+												type="button"
+												variant="destructive"
 											>
 												<X className="h-3 w-3" />
 											</Button>
 										</AlertDialogTrigger>
 										<AlertDialogContent>
 											<AlertDialogHeader>
-												<AlertDialogTitle>
-													Estas seguro de eliminar esta imagen?
-												</AlertDialogTitle>
+												<AlertDialogTitle>Estas seguro de eliminar esta imagen?</AlertDialogTitle>
 												<AlertDialogDescription>
-													Esta acción no se puede deshacer. Es permanente (no se
-													puede recuperar, deberas subir una nueva).
+													Esta acción no se puede deshacer. Es permanente (no se puede recuperar, deberas subir una nueva).
 												</AlertDialogDescription>
 											</AlertDialogHeader>
 											<AlertDialogFooter>
@@ -530,13 +454,13 @@ export function Uploader({
 					isUploadedFile(value) && (
 						<Card className="w-fit">
 							<CardContent>
-								<div key={value.key} className="group relative h-48 w-48">
+								<div className="group relative h-48 w-48" key={value.key}>
 									{isImage(value) ? (
 										<div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
 											<ImageWithSkeleton
-												src={value.url || "/placeholder.svg"}
 												alt={value.name || "Imagen"}
 												className="object-cover"
+												src={value.url || "/placeholder.svg"}
 											/>
 										</div>
 									) : (
@@ -547,23 +471,20 @@ export function Uploader({
 									<AlertDialog>
 										<AlertDialogTrigger asChild>
 											<Button
-												type="button"
-												variant="destructive"
-												size="icon"
 												className="absolute top-0 right-0 h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
 												disabled={disabled}
+												size="icon"
+												type="button"
+												variant="destructive"
 											>
 												<X className="h-3 w-3" />
 											</Button>
 										</AlertDialogTrigger>
 										<AlertDialogContent>
 											<AlertDialogHeader>
-												<AlertDialogTitle>
-													Estas seguro de eliminar esta imagen?
-												</AlertDialogTitle>
+												<AlertDialogTitle>Estas seguro de eliminar esta imagen?</AlertDialogTitle>
 												<AlertDialogDescription>
-													Esta acción no se puede deshacer. Es permanente (no se
-													puede recuperar, deberas subir una nueva).
+													Esta acción no se puede deshacer. Es permanente (no se puede recuperar, deberas subir una nueva).
 												</AlertDialogDescription>
 											</AlertDialogHeader>
 											<AlertDialogFooter>
@@ -595,9 +516,7 @@ export function Uploader({
 					{...getRootProps()}
 					className={cn(
 						"cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors",
-						isDragActive
-							? "border-red-500 bg-red-50"
-							: "border-gray-300 hover:border-gray-400",
+						isDragActive ? "border-red-500 bg-red-50" : "border-gray-300 hover:border-gray-400",
 						disabled && "cursor-not-allowed opacity-50",
 					)}
 				>
@@ -611,13 +530,9 @@ export function Uploader({
 
 						<div>
 							<p className="mb-2 font-medium text-gray-700 text-lg">
-								{isDragActive
-									? "Suelta los archivos aquí"
-									: placeholder || "Arrastra archivos aquí"}
+								{isDragActive ? "Suelta los archivos aquí" : placeholder || "Arrastra archivos aquí"}
 							</p>
-							<p className="mb-4 text-gray-500 text-sm">
-								o haz clic para seleccionar archivos
-							</p>
+							<p className="mb-4 text-gray-500 text-sm">o haz clic para seleccionar archivos</p>
 							<div className="flex justify-center gap-4 text-gray-400 text-xs">
 								<span>Máximo {maxFiles} archivos</span>
 								<span>•</span>
@@ -625,11 +540,7 @@ export function Uploader({
 							</div>
 						</div>
 
-						<Button
-							type="button"
-							variant="outline"
-							disabled={disabled || uploading}
-						>
+						<Button disabled={disabled || uploading} type="button" variant="outline">
 							Seleccionar archivos
 						</Button>
 					</div>
@@ -641,12 +552,10 @@ export function Uploader({
 					<CardContent className="p-6">
 						<div className="space-y-3">
 							<div className="flex items-center justify-between">
-								<span className="font-medium text-sm">
-									Subiendo archivos...
-								</span>
+								<span className="font-medium text-sm">Subiendo archivos...</span>
 								<span className="text-gray-500 text-sm">{uploadProgress}%</span>
 							</div>
-							<Progress value={uploadProgress} className="h-2" />
+							<Progress className="h-2" value={uploadProgress} />
 						</div>
 					</CardContent>
 				</Card>
@@ -655,9 +564,7 @@ export function Uploader({
 			{isValueArray(value) && value?.length > 0 ? (
 				<div className="space-y-3">
 					<div className="flex items-center justify-between">
-						<h4 className="font-medium text-sm">
-							Archivos subidos ({value?.length})
-						</h4>
+						<h4 className="font-medium text-sm">Archivos subidos ({value?.length})</h4>
 						<Badge variant="secondary">
 							{value?.length}/{maxFiles}
 						</Badge>
@@ -666,23 +573,18 @@ export function Uploader({
 					{preview === "grid" ? (
 						<div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
 							{value?.map((file) => (
-								<div key={file.key} className="group relative">
+								<div className="group relative" key={file.key}>
 									<Card className="overflow-hidden p-0">
 										<CardContent className="p-0">
 											{isImage(file) ? (
 												<div className="relative h-20 w-20 overflow-hidden">
 													<ImageWithSkeleton
-														src={file.url || "/placeholder.svg"}
 														alt={file.name || "Imagen"}
 														className="aspect-square h-full w-full object-cover"
+														src={file.url || "/placeholder.svg"}
 													/>
 													{file.isMainImage && (
-														<Button
-															type="button"
-															size="icon"
-															variant="outline"
-															className="absolute top-2 left-2 h-6 w-6"
-														>
+														<Button className="absolute top-2 left-2 h-6 w-6" size="icon" type="button" variant="outline">
 															<StarIcon className="h-4 w-4 text-yellow-500" />
 														</Button>
 													)}
@@ -693,37 +595,27 @@ export function Uploader({
 												</div>
 											)}
 											<div className="p-3">
-												<p className="truncate font-medium text-xs">
-													{file.name || "Archivo"}
-												</p>
-												{file.size && (
-													<p className="text-gray-500 text-xs">
-														{formatFileSize(file.size)}
-													</p>
-												)}
+												<p className="truncate font-medium text-xs">{file.name || "Archivo"}</p>
+												{file.size && <p className="text-gray-500 text-xs">{formatFileSize(file.size)}</p>}
 											</div>
 										</CardContent>
 									</Card>
 									<AlertDialog>
 										<AlertDialogTrigger asChild>
 											<Button
-												type="button"
-												variant="destructive"
-												size="icon"
 												className="-top-2 -right-2 absolute h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
 												disabled={disabled}
+												size="icon"
+												type="button"
+												variant="destructive"
 											>
 												<X className="h-3 w-3" />
 											</Button>
 										</AlertDialogTrigger>
 										<AlertDialogContent>
 											<AlertDialogHeader>
-												<AlertDialogTitle>
-													Estas seguro de eliminar esta imagen?
-												</AlertDialogTitle>
-												<AlertDialogDescription>
-													Esta acción no se puede deshacer. Es permanente.
-												</AlertDialogDescription>
+												<AlertDialogTitle>Estas seguro de eliminar esta imagen?</AlertDialogTitle>
+												<AlertDialogDescription>Esta acción no se puede deshacer. Es permanente.</AlertDialogDescription>
 											</AlertDialogHeader>
 											<AlertDialogFooter>
 												<AlertDialogCancel>Cancelar</AlertDialogCancel>
@@ -738,12 +630,12 @@ export function Uploader({
 									</AlertDialog>
 									{!file.isMainImage && (
 										<Button
-											type="button"
-											size="icon"
-											variant="outline"
-											disabled={disabled}
 											className="absolute top-2 left-2 h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+											disabled={disabled}
 											onClick={() => handleMainImage(file.key)}
+											size="icon"
+											type="button"
+											variant="outline"
 										>
 											<StarIcon className="h-4 w-4 text-yellow-500" />
 										</Button>
@@ -760,9 +652,9 @@ export function Uploader({
 											{isImage(file) ? (
 												<div className="relative h-12 w-12 overflow-hidden rounded bg-gray-100">
 													<ImageWithSkeleton
-														src={file.url || "/placeholder.svg"}
 														alt={file.name || "Imagen"}
 														className="object-cover"
+														src={file.url || "/placeholder.svg"}
 													/>
 												</div>
 											) : (
@@ -772,30 +664,21 @@ export function Uploader({
 											)}
 
 											<div className="min-w-0 flex-1">
-												<p className="truncate font-medium text-sm">
-													{file.name || "Archivo"}
-												</p>
-												{file.size && (
-													<p className="text-gray-500 text-xs">
-														{formatFileSize(file.size)}
-													</p>
-												)}
+												<p className="truncate font-medium text-sm">{file.name || "Archivo"}</p>
+												{file.size && <p className="text-gray-500 text-xs">{formatFileSize(file.size)}</p>}
 											</div>
 
 											<div className="flex items-center gap-2">
-												<Badge
-													variant="secondary"
-													className="flex items-center gap-1"
-												>
+												<Badge className="flex items-center gap-1" variant="secondary">
 													<Check className="h-3 w-3" />
 													Subido
 												</Badge>
 												<Button
+													disabled={disabled}
+													onClick={() => removeFile(file.key)}
+													size="icon"
 													type="button"
 													variant="ghost"
-													size="icon"
-													onClick={() => removeFile(file.key)}
-													disabled={disabled}
 												>
 													<X className="h-4 w-4" />
 												</Button>
@@ -816,9 +699,9 @@ export function Uploader({
 									{isImage(value) ? (
 										<div className="relative h-12 w-12 overflow-hidden rounded bg-gray-100">
 											<ImageWithSkeleton
-												src={value.url || "/placeholder.svg"}
 												alt={value.name || "Imagen"}
 												className="object-cover"
+												src={value.url || "/placeholder.svg"}
 											/>
 										</div>
 									) : (
@@ -828,31 +711,16 @@ export function Uploader({
 									)}
 
 									<div className="min-w-0 flex-1">
-										<p className="truncate font-medium text-sm">
-											{value.name || "Archivo"}
-										</p>
-										{value.size && (
-											<p className="text-gray-500 text-xs">
-												{formatFileSize(value.size)}
-											</p>
-										)}
+										<p className="truncate font-medium text-sm">{value.name || "Archivo"}</p>
+										{value.size && <p className="text-gray-500 text-xs">{formatFileSize(value.size)}</p>}
 									</div>
 
 									<div className="flex items-center gap-2">
-										<Badge
-											variant="secondary"
-											className="flex items-center gap-1"
-										>
+										<Badge className="flex items-center gap-1" variant="secondary">
 											<Check className="h-3 w-3" />
 											Subido
 										</Badge>
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon"
-											onClick={() => removeFile(value.key)}
-											disabled={disabled}
-										>
+										<Button disabled={disabled} onClick={() => removeFile(value.key)} size="icon" type="button" variant="ghost">
 											<X className="h-4 w-4" />
 										</Button>
 									</div>

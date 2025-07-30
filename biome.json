@@ -6,22 +6,56 @@
 		"useIgnoreFile": false
 	},
 	"files": {
-		"ignoreUnknown": false,
-		"includes": ["app/**", "components/**", "data/**", "hooks/**", "lib/**"]
+		"ignoreUnknown": true,
+		"includes": [
+			"**",
+			"!**/node_modules",
+			"!**/dist",
+			"!**/public",
+			"!**/.astro/**",
+			"!**/.next/**",
+			"!**/.git",
+			"!**/.vscode",
+			"!**/*.config.{js,ts,json,mjs}",
+			"!**/*.jsonc",
+			"!**/*.yml",
+			"!**/prisma/**",
+			"!**/test-results/**",
+			"!**/tests/**",
+			"!**/playwright/**",
+			"!**/playwright-report/**"
+		]
 	},
 	"formatter": {
 		"enabled": true,
-		"indentStyle": "tab"
+		"indentStyle": "tab",
+		"lineWidth": 150,
+		"indentWidth": 4
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on",
+				"useSortedAttributes": "on",
+				"useSortedProperties": "on"
+			}
+		}
 	},
 	"linter": {
 		"enabled": true,
-		"domains": {
-			"next": "all",
-			"react": "all",
-			"project": "all"
-		},
 		"rules": {
 			"recommended": true,
+			"complexity": {
+				"noBannedTypes": "off"
+			},
+			"suspicious": {
+				"noArrayIndexKey": "off",
+				"noExplicitAny": "off"
+			},
+			"style": {
+				"useSelfClosingElements": "off"
+			},
 			"nursery": {
 				"useSortedClasses": {
 					"level": "error",
@@ -34,15 +68,6 @@
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"
-		}
-	},
-	"assist": {
-		"enabled": true,
-		"actions": {
-			"source": {
-				"organizeImports": "on",
-				"recommended": true
-			}
 		}
 	}
 }

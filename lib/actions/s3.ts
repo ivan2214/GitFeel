@@ -1,14 +1,10 @@
 "use server";
 
-import {
-	DeleteObjectCommand,
-	PutObjectCommand,
-	S3Client,
-} from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { revalidatePath } from "next/cache";
 import { v4 as uuidv4 } from "uuid";
-import prisma from "../prisma.ts";
+import prisma from "../prisma";
 
 const s3Client = new S3Client({
 	region: process.env.AWS_REGION || "",
@@ -20,15 +16,7 @@ const s3Client = new S3Client({
 
 const BUCKET_NAME = process.env.S3_BUCKET_NAME || "";
 
-export async function generatePresignedUploadUrl({
-	filename,
-	contentType,
-	size,
-}: {
-	filename: string;
-	contentType: string;
-	size: number;
-}) {
+export async function generatePresignedUploadUrl({ filename, contentType, size }: { filename: string; contentType: string; size: number }) {
 	try {
 		// Validaciones
 		if (size > 10 * 1024 * 1024) {
@@ -75,7 +63,7 @@ export async function deleteS3Object({ key }: { key: string }) {
 
 		await s3Client.send(command);
 
-		await prisma.uploadedFile.deleteMany({
+		await prisma.uploadedS3.deleteMany({
 			where: {
 				key,
 			},

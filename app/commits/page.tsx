@@ -89,13 +89,9 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 		headers: await headers(),
 	});
 
-	const [commits, allTags] = await Promise.all([
-		getCommits(searchParams.tags, searchParams.query),
-		getAllTags(),
-	]);
+	const [commits, allTags] = await Promise.all([getCommits(searchParams.tags, searchParams.query), getAllTags()]);
 
-	const activeTags =
-		searchParams.tags?.split(",").map((tag) => tag.trim()) || [];
+	const activeTags = searchParams.tags?.split(",").map((tag) => tag.trim()) || [];
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -112,33 +108,21 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 
 								<div className="space-y-4">
 									<div>
-										<Label className="mb-2 block font-medium text-sm">
-											Buscar en commits
-										</Label>
+										<Label className="mb-2 block font-medium text-sm">Buscar en commits</Label>
 										<div className="relative">
 											<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
-											<Input
-												placeholder="Buscar..."
-												defaultValue={searchParams.query}
-												className="pl-10"
-											/>
+											<Input className="pl-10" defaultValue={searchParams.query} placeholder="Buscar..." />
 										</div>
 									</div>
 
 									<div>
-										<Label className="mb-2 block font-medium text-sm">
-											Tags populares
-										</Label>
+										<Label className="mb-2 block font-medium text-sm">Tags populares</Label>
 										<div className="flex flex-wrap gap-2">
 											{allTags.map((tag) => (
-												<Link key={tag.id} href={`/commits?tags=${tag.name}`}>
+												<Link href={`/commits?tags=${tag.name}`} key={tag.id}>
 													<Badge
-														variant={
-															activeTags.includes(tag.name)
-																? "default"
-																: "outline"
-														}
 														className="cursor-pointer hover:bg-primary/10"
+														variant={activeTags.includes(tag.name) ? "default" : "outline"}
 													>
 														#{tag.name} ({tag._count.commits})
 													</Badge>
@@ -169,15 +153,13 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 							<Card>
 								<CardContent className="p-4">
 									<div className="flex flex-wrap items-center gap-2">
-										<span className="font-medium text-sm">
-											Filtros activos:
-										</span>
+										<span className="font-medium text-sm">Filtros activos:</span>
 										{activeTags.map((tag) => (
 											<Badge key={tag} variant="secondary">
 												#{tag}
 												<Link
-													href={`/commits?tags=${activeTags.filter((t) => t !== tag).join(",")}`}
 													className="ml-1 hover:text-red-500"
+													href={`/commits?tags=${activeTags.filter((t) => t !== tag).join(",")}`}
 												>
 													×
 												</Link>
@@ -186,18 +168,12 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 										{searchParams.query && (
 											<Badge variant="secondary">
 												"{searchParams.query}"
-												<Link
-													href="/commits"
-													className="ml-1 hover:text-red-500"
-												>
+												<Link className="ml-1 hover:text-red-500" href="/commits">
 													×
 												</Link>
 											</Badge>
 										)}
-										<Link
-											href="/commits"
-											className="text-blue-500 text-sm hover:underline"
-										>
+										<Link className="text-blue-500 text-sm hover:underline" href="/commits">
 											Limpiar filtros
 										</Link>
 									</div>
@@ -208,20 +184,14 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 						{/* Commits List */}
 						<div className="space-y-4">
 							{commits.map((commit) => (
-								<CommitCard
-									key={commit.id}
-									commit={commit}
-									currentUserId={session?.user?.id}
-								/>
+								<CommitCard commit={commit} currentUserId={session?.user?.id} key={commit.id} />
 							))}
 						</div>
 
 						{commits.length === 0 && (
 							<Card>
 								<CardContent className="p-12 text-center">
-									<p className="text-muted-foreground">
-										No se encontraron commits con estos filtros.
-									</p>
+									<p className="text-muted-foreground">No se encontraron commits con estos filtros.</p>
 									<Button asChild className="mt-4">
 										<Link href="/commits">Ver todos los commits</Link>
 									</Button>

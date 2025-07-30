@@ -13,24 +13,11 @@ export const metadata = createMetadata({
 		default: "gitfeel - Red social para developers",
 		template: "%s | gitfeel",
 	},
-	description:
-		"La red social donde los developers comparten sus commits emocionales, frustraciones, logros y dudas de programación.",
-	keywords: [
-		"developers",
-		"programadores",
-		"red social",
-		"git",
-		"commits",
-		"código",
-		"programación",
-	],
+	description: "La red social donde los developers comparten sus commits emocionales, frustraciones, logros y dudas de programación.",
+	keywords: ["developers", "programadores", "red social", "git", "commits", "código", "programación"],
 });
 
-export default function RootLayout({
-	children,
-}: {
-	children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
 		<html lang="es">
 			<body className={inter.className}>

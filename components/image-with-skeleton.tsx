@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -12,13 +13,7 @@ type ImageWithSkeletonProps = {
 	priority?: boolean;
 };
 
-export const ImageWithSkeleton: React.FC<ImageWithSkeletonProps> = ({
-	src,
-	alt,
-	className = "",
-	objectFit = "cover",
-	priority = false,
-}) => {
+export const ImageWithSkeleton: React.FC<ImageWithSkeletonProps> = ({ src, alt, className = "", objectFit = "cover", priority = false }) => {
 	const [isLoading, setIsLoading] = useState(true);
 
 	const handleImageLoad = () => {
@@ -36,17 +31,13 @@ export const ImageWithSkeleton: React.FC<ImageWithSkeletonProps> = ({
 					}}
 				/>
 			)}
-			<img
-				src={src}
+			<Image
 				alt={alt}
-				className={cn(
-					"h-full w-full transition-opacity duration-300",
-					className,
-					isLoading && "opacity-0",
-				)}
-				style={{ objectFit }}
-				onLoad={handleImageLoad}
+				className={cn("h-full w-full transition-opacity duration-300", className, isLoading && "opacity-0")}
 				loading={priority ? "eager" : "lazy"}
+				onLoad={handleImageLoad}
+				src={src}
+				style={{ objectFit }}
 			/>
 		</div>
 	);

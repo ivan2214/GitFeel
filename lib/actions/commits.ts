@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import type { CreateCommitState } from "@/lib/types";
+import type { CreateCommitState, CreateForkState, ToggleStarState, ToggleStashState } from "@/lib/types";
 
 const google = createGoogleGenerativeAI({
 	// custom settings
@@ -15,10 +15,7 @@ const google = createGoogleGenerativeAI({
 
 const model = google("gemini-2.5-flash");
 
-export async function createCommit(
-	_prevState: CreateCommitState,
-	formData: FormData,
-): Promise<CreateCommitState> {
+export async function createCommit(_prevState: CreateCommitState, formData: FormData): Promise<CreateCommitState> {
 	try {
 		const session = await auth.api.getSession({
 			headers: await headers(),
@@ -118,7 +115,7 @@ export async function suggestTags(content: string): Promise<string[]> {
 	}
 }
 
-export async function toggleStar(commitId: string) {
+export async function toggleStar(_prevState: ToggleStarState, commitId: string): Promise<ToggleStarState> {
 	try {
 		const session = await auth.api.getSession({
 			headers: await headers(),
@@ -161,7 +158,7 @@ export async function toggleStar(commitId: string) {
 	}
 }
 
-export async function toggleStash(commitId: string) {
+export async function toggleStash(_prevState: ToggleStashState, commitId: string): Promise<ToggleStashState> {
 	try {
 		const session = await auth.api.getSession({
 			headers: await headers(),
@@ -198,9 +195,7 @@ export async function toggleStash(commitId: string) {
 		revalidatePath(`/commits/${commitId}`);
 
 		return {
-			successMessage: existingStash
-				? "Removido del stash"
-				: "Agregado al stash",
+			successMessage: existingStash ? "Removido del stash" : "Agregado al stash",
 		};
 	} catch (error) {
 		console.error("Error toggling stash:", error);
@@ -208,7 +203,16 @@ export async function toggleStash(commitId: string) {
 	}
 }
 
-export async function createFork(commitId: string, content?: string) {
+export async function createFork(
+	_prevState: CreateForkState,
+	{
+		commitId,
+		content,
+	}: {
+		commitId: string;
+		content?: string;
+	},
+): Promise<CreateForkState> {
 	try {
 		const session = await auth.api.getSession({
 			headers: await headers(),

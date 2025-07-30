@@ -72,11 +72,7 @@ async function getActiveUsers() {
 export default async function HomePage() {
 	const currentUser = await getCurrentUser();
 
-	const [commits, trendingTags, activeUsers] = await Promise.all([
-		getCommits(),
-		getTrendingTags(),
-		getActiveUsers(),
-	]);
+	const [commits, trendingTags, activeUsers] = await Promise.all([getCommits(), getTrendingTags(), getActiveUsers()]);
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -88,20 +84,14 @@ export default async function HomePage() {
 
 						<div className="space-y-4">
 							{commits.map((commit) => (
-								<CommitCard
-									key={commit.id}
-									commit={commit}
-									currentUserId={currentUser?.id}
-								/>
+								<CommitCard _currentUserId={currentUser?.id} commit={commit} key={commit.id} />
 							))}
 						</div>
 
 						{commits.length === 0 && (
 							<Card>
 								<CardContent className="p-12 text-center">
-									<p className="text-muted-foreground">
-										No hay commits aún. ¡Sé el primero en compartir!
-									</p>
+									<p className="text-muted-foreground">No hay commits aún. ¡Sé el primero en compartir!</p>
 								</CardContent>
 							</Card>
 						)}
@@ -120,14 +110,12 @@ export default async function HomePage() {
 							<CardContent className="space-y-3">
 								{trendingTags.map((tag) => (
 									<Link
-										key={tag.id}
-										href={`/commits?tags=${tag.name}`}
 										className="flex items-center justify-between rounded-md p-2 transition-colors hover:bg-muted/50"
+										href={`/commits?tags=${tag.name}`}
+										key={tag.id}
 									>
 										<Badge variant="secondary">#{tag.name}</Badge>
-										<span className="text-muted-foreground text-sm">
-											{tag._count.commits} commits
-										</span>
+										<span className="text-muted-foreground text-sm">{tag._count.commits} commits</span>
 									</Link>
 								))}
 							</CardContent>
@@ -144,18 +132,16 @@ export default async function HomePage() {
 							<CardContent className="space-y-3">
 								{activeUsers.map((user) => (
 									<Link
-										key={user.id}
-										href={`/dev/${user.id}`}
 										className="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-muted/50"
+										href={`/dev/${user.id}`}
+										key={user.id}
 									>
 										<div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-500 font-semibold text-sm text-white">
 											{user.name?.charAt(0).toUpperCase()}
 										</div>
 										<div className="min-w-0 flex-1">
 											<p className="truncate font-medium">{user.name}</p>
-											<p className="text-muted-foreground text-sm">
-												{user._count.commits} commits
-											</p>
+											<p className="text-muted-foreground text-sm">{user._count.commits} commits</p>
 										</div>
 									</Link>
 								))}

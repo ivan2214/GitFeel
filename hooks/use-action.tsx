@@ -23,10 +23,7 @@ export function useAction<TInput, TState extends ActionResult>(
 ) {
 	const router = useRouter();
 
-	const [state, execute, pending] = useActionState<TState, TInput>(
-		action,
-		initialState,
-	);
+	const [state, execute, pending] = useActionState<TState, TInput>(action, initialState);
 
 	useEffect(() => {
 		if (options.showToasts !== false) {
@@ -45,14 +42,7 @@ export function useAction<TInput, TState extends ActionResult>(
 		if (state.errorMessage && options.onError) {
 			options.onError(state);
 		}
-	}, [
-		state,
-		options.onError,
-		options.onSuccess,
-		options.redirectTo,
-		options.showToasts,
-		router.push,
-	]);
+	}, [state, options.onError, options.onSuccess, options.redirectTo, options.showToasts, router.push]);
 
 	return { state, execute, pending };
 }

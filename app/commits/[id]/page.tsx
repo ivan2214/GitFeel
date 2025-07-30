@@ -1,7 +1,7 @@
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { ArrowLeft, MessageCircle } from "lucide-react";
-import { headers } from "next/headers";
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CommitCard } from "@/components/commit-card";
@@ -9,8 +9,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { getCurrentUser } from "@/data/user";
 import { createPatch } from "@/lib/actions/patches";
-import { auth } from "@/lib/auth";
+
 import prisma from "@/lib/prisma";
 
 interface CommitDetailPageProps {
@@ -75,12 +76,8 @@ export async function generateMetadata({ params }: CommitDetailPageProps) {
 	};
 }
 
-export default async function CommitDetailPage({
-	params,
-}: CommitDetailPageProps) {
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	});
+export default async function CommitDetailPage({ params }: CommitDetailPageProps) {
+	const user = await getCurrentUser();
 
 	const commit = await getCommit((await params).id);
 
@@ -94,8 +91,8 @@ export default async function CommitDetailPage({
 				<div className="space-y-6">
 					{/* Updated Back Button */}
 					<div className="mb-6 flex items-center gap-4">
-						<Button asChild variant="ghost" size="sm">
-							<Link href="/commits" className="flex items-center gap-2">
+						<Button asChild size="sm" variant="ghost">
+							<Link className="flex items-center gap-2" href="/commits">
 								<ArrowLeft className="h-4 w-4" />
 								Volver a explorar
 							</Link>
@@ -103,7 +100,7 @@ export default async function CommitDetailPage({
 					</div>
 
 					{/* Main Commit */}
-					<CommitCard commit={commit} currentUserId={session?.user?.id} />
+					<CommitCard _currentUserId={user?.id} commit={commit} />
 
 					{/* Patches (Comments) Section */}
 					<Card>
@@ -115,7 +112,7 @@ export default async function CommitDetailPage({
 						</CardHeader>
 						<CardContent className="space-y-6">
 							{/* Add Patch Form */}
-							{session?.user && (
+							{user && (
 								<form
 									action={async (formData) => {
 										"use server";
@@ -123,23 +120,16 @@ export default async function CommitDetailPage({
 									}}
 									className="space-y-4"
 								>
-									<input type="hidden" name="commitId" value={commit.id} />
+									<input name="commitId" type="hidden" value={commit.id} />
 									<div className="flex gap-3">
 										<Avatar className="h-8 w-8">
-											<AvatarImage src={session.user.image || ""} />
-											<AvatarFallback>
-												{session.user.name?.charAt(0).toUpperCase()}
-											</AvatarFallback>
+											<AvatarImage src={user.image || ""} />
+											<AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
 										</Avatar>
 										<div className="flex-1">
-											<Textarea
-												name="content"
-												placeholder="Escribe tu patch..."
-												className="min-h-[80px]"
-												required
-											/>
+											<Textarea className="min-h-[80px]" name="content" placeholder="Escribe tu patch..." required />
 											<div className="mt-2 flex justify-end">
-												<Button type="submit" size="sm">
+												<Button size="sm" type="submit">
 													Enviar Patch
 												</Button>
 											</div>
@@ -151,24 +141,16 @@ export default async function CommitDetailPage({
 							{/* Patches List */}
 							<div className="space-y-4">
 								{commit.patches.map((patch) => (
-									<div
-										key={patch.id}
-										className="flex gap-3 rounded-lg bg-muted/30 p-4"
-									>
+									<div className="flex gap-3 rounded-lg bg-muted/30 p-4" key={patch.id}>
 										<Link href={`/dev/${patch.author.id}`}>
 											<Avatar className="h-8 w-8">
 												<AvatarImage src={patch.author.image || ""} />
-												<AvatarFallback>
-													{patch.author.name?.charAt(0).toUpperCase()}
-												</AvatarFallback>
+												<AvatarFallback>{patch.author.name?.charAt(0).toUpperCase()}</AvatarFallback>
 											</Avatar>
 										</Link>
 										<div className="flex-1 space-y-1">
 											<div className="flex items-center gap-2">
-												<Link
-													href={`/dev/${patch.author.id}`}
-													className="font-medium hover:underline"
-												>
+												<Link className="font-medium hover:underline" href={`/dev/${patch.author.id}`}>
 													{patch.author.name}
 												</Link>
 												<span className="text-muted-foreground text-sm">

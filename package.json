@@ -8,7 +8,11 @@
 		"start": "next start",
 		"lint": "next lint",
 		"check": "biome check --write",
-		"check:fix": "biome check --fix"
+		"check:fix": "biome check --fix",
+		"typecheck": "tsc --noEmit",
+		"db:studio": "prisma studio",
+		"db:reset": "prisma migrate reset --force",
+		"postinstall": "prisma generate"
 	},
 	"dependencies": {
 		"@ai-sdk/google": "^1.2.22",

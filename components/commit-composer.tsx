@@ -82,9 +82,7 @@ export function CommitComposer() {
 		return (
 			<Card>
 				<CardContent className="p-6 text-center">
-					<p className="text-muted-foreground">
-						Inicia sesión para hacer commits
-					</p>
+					<p className="text-muted-foreground">Inicia sesión para hacer commits</p>
 				</CardContent>
 			</Card>
 		);
@@ -99,28 +97,26 @@ export function CommitComposer() {
 					<div className="flex gap-3">
 						<Avatar className="h-10 w-10">
 							<AvatarImage src={session.user.image || ""} />
-							<AvatarFallback>
-								{session.user.name?.charAt(0).toUpperCase()}
-							</AvatarFallback>
+							<AvatarFallback>{session.user.name?.charAt(0).toUpperCase()}</AvatarFallback>
 						</Avatar>
 						<div className="flex-1 space-y-3">
 							<Textarea
-								placeholder="¿Qué está pasando en tu código? Comparte tu frustración, logro o duda..."
-								value={content}
-								onChange={(e) => setContent(e.target.value)}
 								className="min-h-[100px] resize-none border-none p-0 text-lg placeholder:text-muted-foreground focus-visible:ring-0"
 								maxLength={280}
+								onChange={(e) => setContent(e.target.value)}
+								placeholder="¿Qué está pasando en tu código? Comparte tu frustración, logro o duda..."
+								value={content}
 							/>
 
 							{showImageUpload && (
 								<div className="rounded-lg border p-4">
 									<Uploader
-										variant="minimal"
-										maxFiles={1}
 										accept={["image/*"]}
+										maxFiles={1}
 										onChange={(file) => setUploadedImage(file as UploadedFile)}
-										value={uploadedImage}
 										placeholder="Sube una imagen para tu commit"
+										value={uploadedImage}
+										variant="minimal"
 									/>
 								</div>
 							)}
@@ -138,12 +134,10 @@ export function CommitComposer() {
 									<div className="flex flex-wrap gap-2">
 										{suggestedTags.map((tag) => (
 											<Badge
-												key={tag}
-												variant={
-													selectedTags.includes(tag) ? "default" : "outline"
-												}
 												className="cursor-pointer hover:bg-primary/10"
+												key={tag}
 												onClick={() => addTag(tag)}
+												variant={selectedTags.includes(tag) ? "default" : "outline"}
 											>
 												#{tag}
 											</Badge>
@@ -156,12 +150,9 @@ export function CommitComposer() {
 							{selectedTags.length > 0 && (
 								<div className="flex flex-wrap gap-2">
 									{selectedTags.map((tag) => (
-										<Badge key={tag} className="flex items-center gap-1">
+										<Badge className="flex items-center gap-1" key={tag}>
 											#{tag}
-											<X
-												className="h-3 w-3 cursor-pointer"
-												onClick={() => removeTag(tag)}
-											/>
+											<X className="h-3 w-3 cursor-pointer" onClick={() => removeTag(tag)} />
 										</Badge>
 									))}
 								</div>
@@ -171,27 +162,14 @@ export function CommitComposer() {
 
 					<div className="flex items-center justify-between border-t pt-3">
 						<div className="flex items-center gap-2">
-							<Button
-								type="button"
-								variant="ghost"
-								size="sm"
-								onClick={() => setShowImageUpload(!showImageUpload)}
-							>
+							<Button onClick={() => setShowImageUpload(!showImageUpload)} size="sm" type="button" variant="ghost">
 								<ImageIcon className="h-4 w-4" />
 							</Button>
 						</div>
 
 						<div className="flex items-center gap-3">
-							<span
-								className={`text-sm ${remainingChars < 20 ? "text-red-500" : "text-muted-foreground"}`}
-							>
-								{remainingChars}
-							</span>
-							<Button
-								type="submit"
-								disabled={pending || !content.trim() || remainingChars < 0}
-								className="flex items-center gap-2"
-							>
+							<span className={`text-sm ${remainingChars < 20 ? "text-red-500" : "text-muted-foreground"}`}>{remainingChars}</span>
+							<Button className="flex items-center gap-2" disabled={pending || !content.trim() || remainingChars < 0} type="submit">
 								<GitCommit className="h-4 w-4" />
 								{pending ? "Committing..." : "Commit"}
 							</Button>

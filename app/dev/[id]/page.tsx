@@ -1,13 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import {
-	Calendar,
-	GitCommit,
-	Github,
-	LinkIcon,
-	MapPin,
-	Twitter,
-} from "lucide-react";
+import { Calendar, GitCommit, Github, LinkIcon, MapPin, Twitter } from "lucide-react";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -112,9 +105,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 	}
 
 	const isOwnProfile = session?.user?.id === user.id;
-	const isFollowing = session?.user
-		? await checkIfFollowing(session.user.id, user.id)
-		: false;
+	const isFollowing = session?.user ? await checkIfFollowing(session.user.id, user.id) : false;
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -127,9 +118,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 								<div className="space-y-4 text-center">
 									<Avatar className="mx-auto h-24 w-24">
 										<AvatarImage src={user.image || ""} />
-										<AvatarFallback className="text-2xl">
-											{user.name?.charAt(0).toUpperCase()}
-										</AvatarFallback>
+										<AvatarFallback className="text-2xl">{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
 									</Avatar>
 
 									<div>
@@ -137,9 +126,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 										<p className="text-muted-foreground">@{user.username}</p>
 									</div>
 
-									{user.bio && (
-										<p className="text-center text-sm">{user.bio}</p>
-									)}
+									{user.bio && <p className="text-center text-sm">{user.bio}</p>}
 
 									<div className="flex justify-center gap-6 text-sm">
 										<div className="text-center">
@@ -147,15 +134,11 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 											<div className="text-muted-foreground">Commits</div>
 										</div>
 										<div className="text-center">
-											<div className="font-semibold">
-												{user._count.following}
-											</div>
+											<div className="font-semibold">{user._count.following}</div>
 											<div className="text-muted-foreground">Siguiendo</div>
 										</div>
 										<div className="text-center">
-											<div className="font-semibold">
-												{user._count.followers}
-											</div>
+											<div className="font-semibold">{user._count.followers}</div>
 											<div className="text-muted-foreground">Seguidores</div>
 										</div>
 									</div>
@@ -166,12 +149,8 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 												await toggleFollow(user.id);
 											}}
 										>
-											<input type="hidden" name="userId" value={user.id} />
-											<Button
-												type="submit"
-												variant={isFollowing ? "outline" : "default"}
-												className="w-full"
-											>
+											<input name="userId" type="hidden" value={user.id} />
+											<Button className="w-full" type="submit" variant={isFollowing ? "outline" : "default"}>
 												{isFollowing ? "Untrack" : "Clone"}
 											</Button>
 										</form>
@@ -196,12 +175,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 									{user.website && (
 										<div className="flex items-center gap-2 text-muted-foreground">
 											<LinkIcon className="h-4 w-4" />
-											<a
-												href={user.website}
-												target="_blank"
-												rel="noopener noreferrer"
-												className="truncate hover:text-blue-500"
-											>
+											<a className="truncate hover:text-blue-500" href={user.website} rel="noopener noreferrer" target="_blank">
 												{user.website}
 											</a>
 										</div>
@@ -211,10 +185,10 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 										<div className="flex items-center gap-2 text-muted-foreground">
 											<Github className="h-4 w-4" />
 											<a
-												href={user.githubUrl}
-												target="_blank"
-												rel="noopener noreferrer"
 												className="truncate hover:text-blue-500"
+												href={user.githubUrl}
+												rel="noopener noreferrer"
+												target="_blank"
 											>
 												GitHub
 											</a>
@@ -225,10 +199,10 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 										<div className="flex items-center gap-2 text-muted-foreground">
 											<Twitter className="h-4 w-4" />
 											<a
-												href={user.twitterUrl}
-												target="_blank"
-												rel="noopener noreferrer"
 												className="truncate hover:text-blue-500"
+												href={user.twitterUrl}
+												rel="noopener noreferrer"
+												target="_blank"
 											>
 												Twitter
 											</a>
@@ -261,11 +235,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 
 						<div className="space-y-4">
 							{user.commits.map((commit) => (
-								<CommitCard
-									key={commit.id}
-									commit={commit}
-									currentUserId={session?.user?.id}
-								/>
+								<CommitCard _currentUserId={session?.user?.id} commit={commit} key={commit.id} />
 							))}
 						</div>
 
@@ -274,9 +244,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 								<CardContent className="p-12 text-center">
 									<GitCommit className="mx-auto mb-4 h-12 w-12 opacity-50" />
 									<p className="text-muted-foreground">
-										{isOwnProfile
-											? "Aún no has hecho ningún commit. ¡Comparte algo!"
-											: `${user.name} aún no ha hecho commits.`}
+										{isOwnProfile ? "Aún no has hecho ningún commit. ¡Comparte algo!" : `${user.name} aún no ha hecho commits.`}
 									</p>
 									{isOwnProfile && (
 										<Button asChild className="mt-4">

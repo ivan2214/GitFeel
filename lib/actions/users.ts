@@ -84,9 +84,7 @@ export async function toggleFollow(userId: string): Promise<ToggleFollowState> {
 		revalidatePath(`/dev/${userId}`);
 
 		return {
-			successMessage: existingFollow
-				? "Dejaste de seguir"
-				: "Ahora sigues a este developer",
+			successMessage: existingFollow ? "Dejaste de seguir" : "Ahora sigues a este developer",
 		};
 	} catch (error) {
 		console.error("Error toggling follow:", error);

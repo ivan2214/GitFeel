@@ -114,12 +114,13 @@ model Commit {
   updatedAt DateTime @updatedAt
 
   // Relations
-  author  User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author  User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
   patches Patch[] // Comments
   stars   Star[] // Likes
   stashes Stash[] // Bookmarks
   forks   Fork[] // Retweets
   tags    CommitTag[]
+  images  UploadedS3[] // imagenes
 
   // Branch (thread) support
   branchId String? // If part of a thread
@@ -224,4 +225,19 @@ model CommitTag {
   @@unique([commitId, tagId])
   @@index([tagId])
   @@map("commit_tags")
+}
+
+model UploadedS3 {
+  key         String  @unique
+  url         String  @unique
+  isMainImage Boolean @default(false)
+  name        String?
+  size        Float?
+
+  // relations
+
+  commit   Commit? @relation(fields: [commitId], references: [id])
+  commitId String?
+
+  @@index([commitId])
 }

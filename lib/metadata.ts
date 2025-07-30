@@ -25,10 +25,7 @@ export function createMetadata(options: CreateMetadataOptions): Metadata {
 		classification,
 	} = options;
 
-	const baseUrl =
-		metadataBase?.toString() ||
-		process.env.NEXT_PUBLIC_APP_URL ||
-		"http://localhost:3000";
+	const baseUrl = metadataBase?.toString() || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 	const titleString = typeof title === "string" ? title : title.default;
 
 	const defaultKeywords = [
