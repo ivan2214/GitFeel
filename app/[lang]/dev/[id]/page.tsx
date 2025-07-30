@@ -130,6 +130,11 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 					},
 				},
 			},
+			tags: {
+				include: {
+					tag: true,
+				},
+			},
 		},
 		orderBy: { createdAt: "desc" },
 	});

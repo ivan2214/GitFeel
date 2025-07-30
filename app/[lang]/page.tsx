@@ -49,7 +49,9 @@ async function getActiveUsers() {
 
 type DataAllPosts = CommitWithDetails | ForkWithDetails;
 
-export default async function HomePage() {
+export default async function HomePage({ params }: { params: Promise<{ lang: string }> }) {
+	const { lang } = await params;
+
 	const user = await getCurrentUser();
 
 	const { commits, forks } = await getCommitsWithForks({

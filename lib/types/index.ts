@@ -110,7 +110,24 @@ export type UserWithStats = User<{
 export type ForkWithDetails = Fork<{
 	include: {
 		user: true;
-		commit: CommitWithDetails;
+		commit: {
+			include: {
+				author: true;
+				tags: {
+					include: {
+						tag: true;
+					};
+				};
+				_count: {
+					select: {
+						patches: true;
+						stars: true;
+						stashes: true;
+						forks: true;
+					};
+				};
+			};
+		};
 		tags: {
 			include: {
 				tag: true;
