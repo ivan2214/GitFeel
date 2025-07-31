@@ -11,7 +11,20 @@ import type { CommitWithDetails, ForkWithDetails, User } from "@/lib/types";
 interface InfiniteCommitsProps {
 	initialCommits: CommitWithDetails[];
 	initialForks: ForkWithDetails[];
-	user: User | null;
+	user: User<{
+		include: {
+			stars: {
+				include: {
+					commit: true;
+				};
+			};
+			stashes: {
+				include: {
+					commit: true;
+				};
+			};
+		};
+	}> | null;
 	dict: Dictionary;
 	lang: Locale;
 	searchParams: {

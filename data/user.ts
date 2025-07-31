@@ -4,7 +4,20 @@ import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import type { User } from "@/lib/types";
 
-export async function getCurrentUser(): Promise<User | null> {
+export async function getCurrentUser(): Promise<User<{
+	include: {
+		stars: {
+			include: {
+				commit: true;
+			};
+		};
+		stashes: {
+			include: {
+				commit: true;
+			};
+		};
+	};
+}> | null> {
 	try {
 		const session = await auth.api.getSession({
 			headers: await headers(),
@@ -17,6 +30,18 @@ export async function getCurrentUser(): Promise<User | null> {
 		const user = await prisma.user.findUnique({
 			where: {
 				id: session.user.id,
+			},
+			include: {
+				stars: {
+					include: {
+						commit: true,
+					},
+				},
+				stashes: {
+					include: {
+						commit: true,
+					},
+				},
 			},
 		});
 
