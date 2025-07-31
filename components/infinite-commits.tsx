@@ -6,11 +6,11 @@ import { GitfeelCommit } from "@/components/gitfeel-commit";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Dictionary, Locale } from "@/lib/dictionaries";
-import type { CommitWithDetails, User } from "@/lib/types";
+import type { CommitWithDetails, ForkWithDetails, User } from "@/lib/types";
 
 interface InfiniteCommitsProps {
 	initialCommits: CommitWithDetails[];
-	initialForks: any[];
+	initialForks: ForkWithDetails[];
 	user: User | null;
 	dict: Dictionary;
 	lang: Locale;
@@ -97,17 +97,18 @@ export function InfiniteCommits({ initialCommits, initialForks, user, dict, lang
 			{allPosts.map((post, index) => (
 				<div key={`${post.type}-${post.data.id}-${index}`}>
 					{post.type === "commit" ? (
-						<GitfeelCommit commit={post.data} dict={dict} lang={lang} user={user} />
+						<GitfeelCommit commit={post.data as CommitWithDetails} dict={dict} lang={lang} user={user} />
 					) : (
 						<GitfeelCommit
-							commit={post.data.commit}
+							commit={(post.data as ForkWithDetails).commit}
 							dict={dict}
 							forkContent={post.data.content}
 							forkDate={new Date(post.data.createdAt)}
-							forkUser={post.data.user}
+							forkTags={post.data.tags}
+							forkUser={(post.data as ForkWithDetails).user}
 							isFork={true}
 							lang={lang}
-							user={user}
+							user={user} // Pass fork's tags
 						/>
 					)}
 				</div>

@@ -238,9 +238,11 @@ export async function createFork(
 	{
 		commitId,
 		content,
+		tagNames,
 	}: {
 		commitId: string;
 		content?: string;
+		tagNames?: string[];
 	},
 ): Promise<CreateForkState> {
 	try {
@@ -280,6 +282,30 @@ export async function createFork(
 				},
 			},
 		});
+
+		// Process tags for the fork if provided
+		if (tagNames?.length) {
+			const tags = tagNames.map((tag) => tag.trim().toLowerCase()).filter(Boolean);
+
+			for (const tagName of tags) {
+				let tag = await prisma.tag.findUnique({
+					where: { name: tagName },
+				});
+
+				if (!tag) {
+					tag = await prisma.tag.create({
+						data: { name: tagName },
+					});
+				}
+
+				await prisma.forkTag.create({
+					data: {
+						forkId: fork.id,
+						tagId: tag.id,
+					},
+				});
+			}
+		}
 
 		// Notify commit author about the new fork
 		if (session.user.id !== fork.commit.authorId) {

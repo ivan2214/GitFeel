@@ -169,7 +169,8 @@
 			"forking": "Forkeando...",
 			"reportCommit": "Reportar commit",
 			"editCommit": "Editar commit",
-			"deleteCommit": "Eliminar commit"
+			"deleteCommit": "Eliminar commit",
+			"forkTagPlaceholder": "Agregar tag personalizado"
 		}
 	},
 	"meta": {
@@ -188,14 +189,30 @@
 			"activeDevelopers": "developers activos"
 		},
 		"commits": {
+			"advancedSearch": "Búsqueda Avanzada",
 			"explore": "explorar commits",
 			"title": "Explorar Sentimientos de Developers",
 			"description": "Descubre lo que piensan y sienten los developers de todo el mundo",
 			"resultsFound": "resultados encontrados",
 			"search": "Búsqueda",
 			"tags": "Tags",
-			"order": "Orden",
-			"backToExplore": "Volver a explorar"
+			"customTagSearch": "Búsqueda de tags personalizados",
+			"customTagSearchPlaceholder": "Escribe un tag personalizado...",
+			"popularTags": "Tags Populares",
+			"order": {
+				"label": "Ordenar por",
+				"orderBy": "Ordenar por",
+				"options": {
+					"popular": "Más Popular",
+					"recent": "Más Reciente",
+					"stars": "Más estrellas",
+					"forks": "Más forks"
+				}
+			},
+			"backToExplore": "Volver a explorar",
+			"clearAll": "Limpiar todos",
+			"searchCommits": "Buscar commits",
+			"searchPlaceholder": "Buscar commits..."
 		},
 		"dev": {
 			"title": "Developer Profile",

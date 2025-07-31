@@ -5,16 +5,19 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { Dictionary, Locale } from "@/lib/dictionaries";
 import { Label } from "./ui/label";
 
 interface AdvancedSearchProps {
 	allTags: Array<{ id: string; name: string; _count: { commits: number } }>;
+	lang: Locale;
+	dic: Dictionary;
 }
 
-export function AdvancedSearch({ allTags }: AdvancedSearchProps) {
+export function AdvancedSearch({ allTags, dic, lang }: AdvancedSearchProps) {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 
@@ -30,7 +33,7 @@ export function AdvancedSearch({ allTags }: AdvancedSearchProps) {
 		if (selectedTags.length > 0) params.set("tags", selectedTags.join(","));
 		if (sortBy !== "recent") params.set("sortBy", sortBy);
 
-		router.push(`/commits?${params.toString()}`);
+		router.push(`/${lang}/commits?${params.toString()}`);
 	};
 
 	const addTag = (tagName: string) => {
@@ -54,7 +57,7 @@ export function AdvancedSearch({ allTags }: AdvancedSearchProps) {
 		setQuery("");
 		setSelectedTags([]);
 		setSortBy("recent");
-		router.push("/commits");
+		router.push(`/${lang}/commits`);
 	};
 
 	useEffect(() => {
@@ -63,32 +66,32 @@ export function AdvancedSearch({ allTags }: AdvancedSearchProps) {
 		if (selectedTags.length > 0) params.set("tags", selectedTags.join(","));
 		if (sortBy !== "recent") params.set("sortBy", sortBy);
 
-		const newUrl = `/commits${params.toString() ? `?${params.toString()}` : ""}`;
+		const newUrl = `/${lang}/commits${params.toString() ? `?${params.toString()}` : ""}`;
 		router.replace(newUrl);
-	}, [query, selectedTags, sortBy, router]);
+	}, [query, selectedTags, sortBy, router, lang]);
 
 	return (
-		<Card className="commit-card">
-			<div className="commit-header">
+		<Card className="commit-card p-0">
+			<CardHeader className="commit-header p-0">
 				<Filter className="h-3 w-3" />
-				<span>búsqueda avanzada</span>
+				<span>{dic.pages.commits.advancedSearch}</span>
 				{(query || selectedTags.length > 0 || sortBy !== "recent") && (
 					<Button className="ml-auto text-xs hover:text-red-400" onClick={clearAll} size="sm" variant="ghost">
-						Limpiar todo
+						{dic.pages.commits.clearAll}
 					</Button>
 				)}
-			</div>
+			</CardHeader>
 			<CardContent className="space-y-4 p-4">
 				{/* Search Input */}
 				<div className="space-y-2">
-					<Label className="font-medium text-sm">Buscar en commits</Label>
+					<Label className="font-medium text-sm">{dic.pages.commits.searchCommits}</Label>
 					<div className="relative">
 						<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
 						<Input
 							className="border-border bg-muted/50 pl-10"
 							onChange={(e) => setQuery(e.target.value)}
 							onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-							placeholder="Buscar sentimientos de developers..."
+							placeholder={dic.pages.commits.searchPlaceholder}
 							value={query}
 						/>
 					</div>
@@ -96,16 +99,16 @@ export function AdvancedSearch({ allTags }: AdvancedSearchProps) {
 
 				{/* Sort Options */}
 				<div className="space-y-2">
-					<Label className="font-medium text-sm">Ordenar por</Label>
+					<Label className="font-medium text-sm">{dic.pages.commits.order.label}</Label>
 					<Select onValueChange={setSortBy} value={sortBy}>
 						<SelectTrigger className="border-border bg-muted/50">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="recent">Más recientes</SelectItem>
-							<SelectItem value="popular">Más populares</SelectItem>
-							<SelectItem value="stars">Más estrellas</SelectItem>
-							<SelectItem value="forks">Más forks</SelectItem>
+							<SelectItem value="recent">{dic.pages.commits.order.options.recent}</SelectItem>
+							<SelectItem value="popular">{dic.pages.commits.order.options.popular}</SelectItem>
+							<SelectItem value="stars">{dic.pages.commits.order.options.stars}</SelectItem>
+							<SelectItem value="forks">{dic.pages.commits.order.options.forks}</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
@@ -113,7 +116,7 @@ export function AdvancedSearch({ allTags }: AdvancedSearchProps) {
 				{/* Selected Tags */}
 				{selectedTags.length > 0 && (
 					<div className="space-y-2">
-						<Label className="font-medium text-sm">Tags seleccionados</Label>
+						<Label className="font-medium text-sm">{dic.pages.commits.customTagSearch}</Label>
 						<div className="flex flex-wrap gap-2">
 							{selectedTags.map((tag) => (
 								<Badge className="flex items-center gap-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white" key={tag}>
@@ -127,13 +130,13 @@ export function AdvancedSearch({ allTags }: AdvancedSearchProps) {
 
 				{/* Add Custom Tag */}
 				<div className="space-y-2">
-					<Label className="font-medium text-sm">Agregar tag personalizado</Label>
+					<Label className="font-medium text-sm">{dic.pages.commits.customTagSearch}</Label>
 					<div className="flex gap-2">
 						<Input
 							className="border-border bg-muted/50"
 							onChange={(e) => setTagInput(e.target.value)}
 							onKeyDown={(e) => e.key === "Enter" && addCustomTag()}
-							placeholder="Escribe un tag..."
+							placeholder={dic.pages.commits.customTagSearchPlaceholder}
 							value={tagInput}
 						/>
 						<Button
@@ -149,7 +152,7 @@ export function AdvancedSearch({ allTags }: AdvancedSearchProps) {
 
 				{/* Popular Tags */}
 				<div className="space-y-2">
-					<Label className="font-medium text-sm">Tags populares</Label>
+					<Label className="font-medium text-sm">{dic.pages.commits.popularTags}</Label>
 					<div className="flex max-h-32 flex-wrap gap-2 overflow-y-auto">
 						{allTags.slice(0, 20).map((tag) => (
 							<Badge

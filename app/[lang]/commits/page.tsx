@@ -1,10 +1,10 @@
 import { Code, TrendingUp } from "lucide-react";
 import { AdvancedSearch } from "@/components/advanced-search";
 import { InfiniteCommits } from "@/components/infinite-commits";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getCurrentUser } from "@/data/user";
 import { getCommitsWithForks } from "@/lib/actions/commits";
-import { getDictionary, type Locale } from "@/lib/dictionaries";
+import { type Dictionary, getDictionary, type Locale } from "@/lib/dictionaries";
 import prisma from "@/lib/prisma";
 
 interface CommitsPageProps {
@@ -34,6 +34,18 @@ async function getAllTags() {
 	});
 }
 
+const getSortLabel = (sortBy: string, dic: Dictionary) => {
+	switch (sortBy) {
+		case "popular":
+			return dic.search.filters.popular;
+		case "stars":
+			return dic.search.filters.stars;
+		case "forks":
+			return dic.search.filters.forks;
+		default:
+			return dic.search.filters.recent;
+	}
+};
 export default async function CommitsPage({ params, searchParams }: CommitsPageProps) {
 	const { lang } = await params;
 	const dict = await getDictionary(lang);
@@ -50,19 +62,6 @@ export default async function CommitsPage({ params, searchParams }: CommitsPageP
 
 	const allTags = await getAllTags();
 
-	const getSortLabel = (sortBy: string) => {
-		switch (sortBy) {
-			case "popular":
-				return dict.search.filters.popular;
-			case "stars":
-				return dict.search.filters.stars;
-			case "forks":
-				return dict.search.filters.forks;
-			default:
-				return dict.search.filters.recent;
-		}
-	};
-
 	const totalResults = commits.length + forks.length;
 
 	return (
@@ -71,21 +70,21 @@ export default async function CommitsPage({ params, searchParams }: CommitsPageP
 				<div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
 					{/* Search Sidebar */}
 					<div className="space-y-6">
-						<AdvancedSearch allTags={allTags} />
+						<AdvancedSearch allTags={allTags} dic={dict} lang={lang} />
 					</div>
 
 					{/* Main Content */}
 					<div className="space-y-6 lg:col-span-3">
 						{/* Header */}
-						<Card className="commit-card">
-							<div className="commit-header">
+						<Card className="commit-card p-0">
+							<CardHeader className="commit-header">
 								<Code className="h-3 w-3" />
 								<span>{dict.pages.commits.explore}</span>
 								<span className="ml-auto flex items-center gap-1">
 									<TrendingUp className="h-3 w-3" />
-									{getSortLabel((await searchParams).sortBy || "recent")}
+									{getSortLabel((await searchParams).sortBy || "recent", dict)}
 								</span>
-							</div>
+							</CardHeader>
 							<CardContent className="p-4">
 								<h1 className="mb-2 font-bold text-2xl">{dict.pages.commits.title}</h1>
 								<p className="text-muted-foreground">
@@ -114,8 +113,8 @@ export default async function CommitsPage({ params, searchParams }: CommitsPageP
 											)}
 											{(await searchParams).sortBy && (await searchParams).sortBy !== "recent" && (
 												<p>
-													<span className="font-medium">{dict.pages.commits.order}:</span>{" "}
-													{getSortLabel((await searchParams).sortBy || "recent")}
+													<span className="font-medium">{dict.pages.commits.order.orderBy}:</span>{" "}
+													{getSortLabel((await searchParams).sortBy || "recent", dict)}
 												</p>
 											)}
 										</div>
