@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { signOut } from "@/lib/auth-client";
-import type { Locale } from "@/lib/dictionaries";
+import type { Dictionary, Locale } from "@/lib/dictionaries";
 import type { User as UserType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { LanguageSelector } from "./language-selector";
@@ -23,7 +23,7 @@ import { NotificationsModal } from "./notifications-modal";
 interface NavbarProps {
 	initialUnreadCount: number;
 	user: UserType | null;
-	dict: any; // Diccionario de traducciones
+	dict: Dictionary; // Diccionario de traducciones
 	lang: Locale; // Idioma actual
 }
 
@@ -95,10 +95,10 @@ export function Navbar({ user, initialUnreadCount, dict, lang }: NavbarProps) {
 							})}
 						</div>
 
+						<LanguageSelector dict={dict} lang={lang} />
 						{/* User Menu or Auth Buttons */}
 						{user ? (
 							<div className="flex items-center gap-2">
-								<LanguageSelector dict={dict} lang={lang} />
 								<NotificationsModal initialUnreadCount={initialUnreadCount} /> {/* Notifications Modal */}
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>
@@ -135,13 +135,13 @@ export function Navbar({ user, initialUnreadCount, dict, lang }: NavbarProps) {
 										<DropdownMenuSeparator />
 										<DropdownMenuItem className="flex items-center gap-2 text-red-600 focus:text-red-600" onClick={handleSignOut}>
 											<LogOut className="h-4 w-4" />
-											{dict.auth.signOut}
+											{dict.auth.logout}
 										</DropdownMenuItem>
 									</DropdownMenuContent>
 								</DropdownMenu>
 							</div>
 						) : (
-							<AuthModals />
+							<AuthModals dict={dict} />
 						)}
 						<ModeToggle />
 					</div>
@@ -182,7 +182,7 @@ export function Navbar({ user, initialUnreadCount, dict, lang }: NavbarProps) {
 										</div>
 									) : (
 										<div className="space-y-3">
-											<AuthModals />
+											<AuthModals dict={dict} />
 										</div>
 									)}
 
@@ -248,7 +248,7 @@ export function Navbar({ user, initialUnreadCount, dict, lang }: NavbarProps) {
 													variant="ghost"
 												>
 													<LogOut className="h-4 w-4" />
-													{dict.auth.signOut}
+													{dict.auth.logout}
 												</Button>
 											</div>
 										</>

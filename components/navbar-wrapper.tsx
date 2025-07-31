@@ -40,7 +40,7 @@ export function NavbarWrapper({ user, dict, lang }: NavbarWrapperProps) {
 		fetchUnreadCount();
 
 		// Poll for unread count updates
-		const interval = setInterval(fetchUnreadCount, 30000); // Every 30 seconds
+		const interval = setInterval(fetchUnreadCount, 60000); // Every 60 seconds
 		return () => clearInterval(interval);
 	}, [user]);
 

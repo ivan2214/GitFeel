@@ -42,8 +42,11 @@ export function middleware(request: NextRequest) {
 
 	// Si ya tiene idioma, continuar
 	if (pathnameHasLocale) {
+		console.log("La ruta ya tiene idioma:", pathname);
+
 		return NextResponse.next();
 	}
+	console.log("La ruta no tiene idioma:", pathname);
 
 	// Obtener el idioma preferido del usuario
 	const locale = getLocale(request);

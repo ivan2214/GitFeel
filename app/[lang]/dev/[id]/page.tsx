@@ -1,5 +1,5 @@
 import { formatDistanceToNow } from "date-fns";
-import { es } from "date-fns/locale";
+import { enUS, es } from "date-fns/locale";
 import { Calendar, Code, GitCommit, Github, LinkIcon, MapPin, Twitter, Users } from "lucide-react";
 
 import Link from "next/link";
@@ -171,7 +171,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 						<Card className="commit-card">
 							<div className="commit-header">
 								<Code className="h-3 w-3" />
-								<span>developer profile</span>
+								<span>{dict.pages.dev.title}</span>
 								<span className="ml-auto">@{user.username}</span>
 							</div>
 							<CardContent className="p-6">
@@ -209,11 +209,11 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 										</div>
 										<div className="text-center">
 											<div className="font-semibold text-primary">{user._count.following}</div>
-											<div className="text-muted-foreground text-xs">Following</div>
+											<div className="text-muted-foreground text-xs">{dict.pages.dev.following}</div>
 										</div>
 										<div className="text-center">
 											<div className="font-semibold text-primary">{user._count.followers}</div>
-											<div className="text-muted-foreground text-xs">Followers</div>
+											<div className="text-muted-foreground text-xs">{dict.pages.dev.followers}</div>
 										</div>
 									</div>
 
@@ -231,16 +231,16 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 												type="submit"
 											>
 												<Users className="mr-2 h-4 w-4" />
-												{isFollowing ? "Unfollow" : "Follow"}
+												{isFollowing ? dict.pages.dev.unfollow : dict.pages.dev.follow}
 											</Button>
 										</form>
 									)}
 
 									{isOwnProfile && (
 										<Button asChild className="gitfeel-button w-full">
-											<Link href="/profile">
+											<Link href={`/${lang}/profile`}>
 												<Code className="mr-2 h-4 w-4" />
-												Edit Profile
+												{dict.pages.dev.profileConfiguration}
 											</Link>
 										</Button>
 									)}
@@ -299,10 +299,10 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 
 									<div className="flex items-center gap-2 text-muted-foreground">
 										<Calendar className="h-4 w-4" />
-										Joined{" "}
+										{dict.pages.dev.joined}{" "}
 										{formatDistanceToNow(new Date(user.createdAt), {
 											addSuffix: true,
-											locale: es,
+											locale: lang === "en" ? enUS : es,
 										})}
 									</div>
 								</div>
@@ -315,7 +315,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 						<Card className="commit-card">
 							<div className="commit-header">
 								<GitCommit className="h-3 w-3" />
-								<span>recent commits</span>
+								<span>{dict.pages.dev.recentCommits}</span>
 								<span className="ml-auto">{user.commits.length} commits</span>
 							</div>
 						</Card>
@@ -346,17 +346,15 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 								<CardContent className="p-12 text-center">
 									<div className="code-block mb-4">
 										<p className="text-slate-400">$ git log --author="{user.username}"</p>
-										<p className="text-yellow-400">warning: no commits found</p>
+										<p className="text-yellow-400">{dict.pages.dev.noCommitsFound}</p>
 									</div>
 									<GitCommit className="mx-auto mb-4 h-12 w-12 opacity-50" />
 									<p className="text-muted-foreground">
-										{isOwnProfile
-											? "You haven't made any commits yet. Share your first developer feeling!"
-											: `${user.name} hasn't made any commits yet.`}
+										{isOwnProfile ? dict.pages.dev.makeFirstCommitDescription : `${user.name} ${dict.pages.dev.makeFirstCommit}`}
 									</p>
 									{isOwnProfile && (
 										<Button asChild className="gitfeel-button mt-4">
-											<Link href="/">Make your first commit</Link>
+											<Link href={`/${lang}/profile`}>{dict.pages.dev.makeFirstCommit}</Link>
 										</Button>
 									)}
 								</CardContent>

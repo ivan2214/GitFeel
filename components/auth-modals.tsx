@@ -5,8 +5,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { signIn } from "@/lib/auth-client";
+import type { Dictionary } from "@/lib/dictionaries";
 
-export function AuthModals() {
+export function AuthModals({ dict }: { dict: Dictionary }) {
 	const [signInOpen, setSignInOpen] = useState(false);
 	const [signUpOpen, setSignUpOpen] = useState(false);
 
@@ -30,7 +31,7 @@ export function AuthModals() {
 				<DialogTrigger asChild>
 					<Button className="flex items-center gap-2" size="sm" variant="ghost">
 						<LogIn className="h-4 w-4" />
-						<span className="hidden sm:inline">Sign In</span>
+						<span className="hidden sm:inline">{dict.auth.login.title}</span>
 					</Button>
 				</DialogTrigger>
 				<DialogContent className="sm:max-w-md">
@@ -43,8 +44,8 @@ export function AuthModals() {
 								</div>
 							</div>
 						</div>
-						<DialogTitle>Welcome back to gitfeel</DialogTitle>
-						<DialogDescription>Sign in to share your developer feelings and connect with the community</DialogDescription>
+						<DialogTitle>{dict.auth.login.title}</DialogTitle>
+						<DialogDescription>{dict.auth.login.subtitle}</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 py-4">
 						<Button
@@ -53,12 +54,12 @@ export function AuthModals() {
 							variant="outline"
 						>
 							<Github className="h-5 w-5" />
-							Continue with GitHub
+							{dict.auth.login.github}
 						</Button>
 
 						<Button className="flex w-full items-center gap-3" onClick={() => handleSocialSignIn("google")} variant="outline">
 							<Chrome className="h-5 w-5" />
-							Continue with Google
+							{dict.auth.login.google}
 						</Button>
 
 						<Button
@@ -67,11 +68,11 @@ export function AuthModals() {
 							variant="outline"
 						>
 							<MessageSquare className="h-5 w-5" />
-							Continue with Discord
+							{dict.auth.login.discord}
 						</Button>
 
 						<div className="border-t pt-4 text-center text-muted-foreground text-sm">
-							Don't have an account?{" "}
+							{dict.auth.login.noAccount}
 							<Button
 								className="font-medium text-primary hover:underline"
 								onClick={() => {
@@ -79,7 +80,7 @@ export function AuthModals() {
 									setSignUpOpen(true);
 								}}
 							>
-								Sign up here
+								{dict.auth.login.signUp}
 							</Button>
 						</div>
 					</div>
@@ -91,7 +92,7 @@ export function AuthModals() {
 				<DialogTrigger asChild>
 					<Button className="gitfeel-button flex items-center gap-2" size="sm">
 						<UserPlus className="h-4 w-4" />
-						<span className="hidden sm:inline">Sign Up</span>
+						<span className="hidden sm:inline">{dict.auth.register.title}</span>
 					</Button>
 				</DialogTrigger>
 				<DialogContent className="sm:max-w-md">
@@ -104,8 +105,8 @@ export function AuthModals() {
 								</div>
 							</div>
 						</div>
-						<DialogTitle>Join the gitfeel community</DialogTitle>
-						<DialogDescription>Connect with developers worldwide and share your coding journey</DialogDescription>
+						<DialogTitle>{dict.auth.register.title}</DialogTitle>
+						<DialogDescription>{dict.auth.register.subtitle}</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 py-4">
 						<Button
@@ -114,12 +115,12 @@ export function AuthModals() {
 							variant="outline"
 						>
 							<Github className="h-5 w-5" />
-							Sign up with GitHub
+							{dict.auth.register.github}
 						</Button>
 
 						<Button className="flex w-full items-center gap-3" onClick={() => handleSocialSignIn("google")} variant="outline">
 							<Chrome className="h-5 w-5" />
-							Sign up with Google
+							{dict.auth.register.google}
 						</Button>
 
 						<Button
@@ -128,11 +129,11 @@ export function AuthModals() {
 							variant="outline"
 						>
 							<MessageSquare className="h-5 w-5" />
-							Sign up with Discord
+							{dict.auth.register.discord}
 						</Button>
 
 						<div className="border-t pt-4 text-center text-muted-foreground text-sm">
-							Already have an account?{" "}
+							{dict.auth.register.hasAccount}
 							<Button
 								className="font-medium text-primary hover:underline"
 								onClick={() => {
@@ -140,7 +141,7 @@ export function AuthModals() {
 									setSignInOpen(true);
 								}}
 							>
-								Sign in here
+								{dict.auth.register.signIn}
 							</Button>
 						</div>
 					</div>

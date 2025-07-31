@@ -37,6 +37,9 @@
 	},
 	"auth": {
 		"login": {
+			"github": "Continue with GitHub",
+			"google": "Continue with Google",
+			"discord": "Continue with Discord",
 			"title": "Sign in",
 			"subtitle": "Enter your account",
 			"email": "Email",
@@ -47,6 +50,9 @@
 			"button": "Sign in"
 		},
 		"register": {
+			"github": "Continue with GitHub",
+			"google": "Continue with Google",
+			"discord": "Continue with Discord",
 			"title": "Create account",
 			"subtitle": "Join the developer community",
 			"name": "Full name",
@@ -57,7 +63,8 @@
 			"hasAccount": "Already have an account?",
 			"signIn": "Sign in",
 			"button": "Create account"
-		}
+		},
+		"logout": "Logout"
 	},
 	"commits": {
 		"title": "Emotional Commits",
@@ -155,6 +162,19 @@
 			"tags": "Tags",
 			"order": "Order",
 			"backToExplore": "Back to explore"
+		},
+		"dev": {
+			"title": "Developer Profile",
+			"following": "Following",
+			"followers": "Followers",
+			"unfollow": "Unfollow",
+			"follow": "Follow",
+			"profileConfiguration": "Profile Configuration",
+			"recentCommits": "Recent Commits",
+			"joined": "Joined",
+			"makeFirstCommit": "Make your first commit",
+			"makeFirstCommitDescription": "You haven't made any commits yet. Share your first developer feeling!",
+			"noCommitsFound": "No commits found"
 		},
 		"profile": {
 			"backToProfile": "Back to profile",

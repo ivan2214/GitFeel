@@ -4,14 +4,14 @@ import { Globe } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import type { Locale } from "@/lib/dictionaries";
+import type { Dictionary, Locale } from "@/lib/dictionaries";
 
 /**
  * Props para el componente LanguageSelector
  */
 interface LanguageSelectorProps {
 	lang: Locale; // Idioma actual
-	dict: Record<string, string>; // Diccionario de traducciones
+	dict: Dictionary;
 }
 
 /**
@@ -36,7 +36,7 @@ export function LanguageSelector({ lang }: LanguageSelectorProps) {
 			<DropdownMenuTrigger asChild>
 				<Button className="gap-2" size="sm" variant="outline">
 					<Globe className="h-4 w-4" />
-					<span className="hidden sm:inline">{lang === "es" ? "Español" : "English"}</span>
+					<span className="hidden sm:inline">{lang}</span>
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end">
