@@ -139,6 +139,13 @@ export function GitfeelCommit({
 		}
 	};
 
+	console.log({
+		commit,
+		user,
+		forkUser,
+		forkContent,
+	});
+
 	return (
 		<div className="space-y-4">
 			{isFork ? (

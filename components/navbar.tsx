@@ -143,8 +143,8 @@ export function Navbar({ user, initialUnreadCount, dict, lang }: NavbarProps) {
 						) : (
 							<AuthModals dict={dict} />
 						)}
-						<ModeToggle />
 					</div>
+					<ModeToggle />
 
 					{/* Mobile Menu Button */}
 					<div className="md:hidden">

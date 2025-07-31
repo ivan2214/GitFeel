@@ -40,7 +40,7 @@ export function InfiniteCommits({ initialCommits, initialForks, user, dict, lang
 	const [forks, setForks] = useState(initialForks);
 	const [loading, setLoading] = useState(false);
 	const [hasMore, setHasMore] = useState(true);
-	const [offset, setOffset] = useState(20);
+	const [offset, setOffset] = useState(5);
 
 	// Combine and sort commits and forks
 	const allPosts = [
@@ -63,7 +63,7 @@ export function InfiniteCommits({ initialCommits, initialForks, user, dict, lang
 				query: searchParams.query,
 				sortBy: (searchParams.sortBy as "recent" | "popular" | "stars" | "forks") || "recent",
 				offset,
-				limit: 20,
+				limit: 5,
 			});
 
 			if (!data.hasMore) {
@@ -71,7 +71,7 @@ export function InfiniteCommits({ initialCommits, initialForks, user, dict, lang
 			} else {
 				setCommits((prev) => [...prev, ...data.commits]);
 				setForks((prev) => [...prev, ...data.forks]);
-				setOffset((prev) => prev + 20);
+				setOffset((prev) => prev + 5);
 			}
 		} catch (error) {
 			console.error("Error loading more commits:", error);
@@ -118,11 +118,11 @@ export function InfiniteCommits({ initialCommits, initialForks, user, dict, lang
 				<CardContent className="p-12 text-center">
 					<div className="code-block mb-4">
 						<p className="text-slate-400">$ git log --grep="{searchParams.query || searchParams.tags}"</p>
-						<p className="text-red-400">fatal: no commits found</p>
+						<p className="text-red-400">{dict.pages.home.noCommitsTitle}</p>
 					</div>
-					<p className="mb-4 text-muted-foreground">No se encontraron commits con estos criterios.</p>
+					<p className="mb-4 text-muted-foreground">{dict.pages.home.noCommitsDescription}</p>
 					<Button asChild className="gitfeel-button">
-						<a href="/commits">Ver todos los commits</a>
+						<a href={`/${lang}/commits`}>{dict.pages.home.allCommits}</a>
 					</Button>
 				</CardContent>
 			</Card>

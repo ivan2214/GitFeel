@@ -145,6 +145,9 @@
 	},
 	"pages": {
 		"home": {
+			"noCommitsTitle": "No commits yet",
+			"noCommitsDescription": "Be the first to share your development experience",
+			"allCommits": "View all commits",
 			"noCommits": "No commits yet. Be the first to share!",
 			"joinGitfeel": "join gitfeel",
 			"joinDescription": "Share your frustrations, achievements and programming doubts",

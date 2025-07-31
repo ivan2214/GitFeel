@@ -81,8 +81,8 @@ export function GitfeelComposer({ user, dict }: { user: User | null; dict: Dicti
 
 	if (!user) {
 		return (
-			<div className="commit-card">
-				<div className="commit-header">
+			<div className="commit-card rounded-xl border border-border bg-card/50 p-4 shadow-sm transition-all hover:border-primary/20 hover:shadow-md">
+				<div className="commit-header mb-4 flex items-center gap-2 border-border/50 border-b pb-2">
 					<Code className="h-3 w-3" />
 					<span>{dict.components.gitfeelComposer.authRequired}</span>
 				</div>

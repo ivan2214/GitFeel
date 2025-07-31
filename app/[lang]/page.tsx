@@ -2,8 +2,8 @@ import { Hash, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { GitfeelCommit } from "@/components/gitfeel-commit";
 import { GitfeelComposer } from "@/components/gitfeel-composer";
+import { InfiniteCommits } from "@/components/infinite-commits";
 import { Badge } from "@/components/ui/badge";
-
 import { Card, CardContent } from "@/components/ui/card";
 import { getCurrentUser } from "@/data/user";
 import { getCommitsWithForks } from "@/lib/actions/commits";
@@ -39,15 +39,38 @@ async function getActiveUsers() {
 				select: {
 					commits: true,
 					followers: true,
+					forks: true,
 				},
 			},
 		},
-		orderBy: {
-			commits: {
-				_count: "desc",
-			},
+		where: {
+			// traerse solo los que tengan commits o forks
+			OR: [
+				{
+					commits: {
+						some: {},
+					},
+				},
+				{
+					forks: {
+						some: {},
+					},
+				},
+			],
 		},
-		take: 5,
+		orderBy: [
+			{
+				commits: {
+					_count: "desc",
+				},
+			},
+			{
+				forks: {
+					_count: "desc",
+				},
+			},
+		],
+		take: 15,
 	});
 }
 
@@ -61,7 +84,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: Loc
 
 	const { commits, forks } = await getCommitsWithForks({
 		sortBy: "recent",
-		limit: 20,
+		limit: 5,
 		offset: 0,
 	});
 
@@ -93,48 +116,32 @@ export default async function HomePage({ params }: { params: Promise<{ lang: Loc
 					<div className="space-y-6 lg:col-span-2">
 						<GitfeelComposer dict={dict} user={user} />
 
-						<div className="space-y-4">
-							{allPosts.map((post, index) => (
-								<div key={`${post.type}-${post.data.id}-${index}`}>
-									{post.type === "commit" ? (
-										<GitfeelCommit commit={post.data as CommitWithDetails} dict={dict} lang={lang} user={user} />
-									) : (
-										<GitfeelCommit
-											commit={(post.data as ForkWithDetails).commit}
-											dict={dict}
-											forkContent={(post.data as ForkWithDetails).content}
-											forkDate={new Date(post.data.createdAt)}
-											forkUser={(post.data as ForkWithDetails).user}
-											isFork={true}
-											lang={lang}
-											user={user}
-										/>
-									)}
-								</div>
-							))}
-						</div>
-
-						{allPosts.length === 0 && (
-							<Card className="commit-card">
-								<CardContent className="p-12 text-center">
-									<p className="text-muted-foreground">{dict.pages.home.noCommits}</p>
-								</CardContent>
-							</Card>
-						)}
+						<InfiniteCommits
+							dict={dict}
+							initialCommits={commits}
+							initialForks={forks}
+							lang={lang}
+							searchParams={{
+								tags: "",
+								query: "",
+								sortBy: "recent",
+							}}
+							user={user}
+						/>
 					</div>
 
 					{/* Sidebar */}
 					<div className="space-y-6">
 						{/* Trending Tags */}
-						<Card className="commit-card">
-							<div className="commit-header">
+						<Card className="commit-card rounded-xl border border-border bg-card/50 p-1.5 shadow-sm transition-all hover:border-primary/20 hover:shadow-md">
+							<div className="commit-header flex items-center gap-2 border-border/50 border-b">
 								<Hash className="h-3 w-3" />
 								<span>{dict.pages.home.trendingTags}</span>
 							</div>
-							<CardContent className="space-y-3 p-4">
+							<CardContent className="grid max-h-56 max-w-md grid-cols-1 place-items-start gap-3 overflow-y-scroll py-1 pr-16">
 								{trendingTags.map((tag) => (
 									<Link
-										className="flex items-center justify-between rounded-md p-2 transition-colors hover:bg-muted/50"
+										className="flex w-full items-center justify-between rounded-md transition-colors hover:bg-muted/70"
 										href={`/${lang}/commits?tags=${tag.name}`}
 										key={tag.id}
 									>
@@ -151,12 +158,12 @@ export default async function HomePage({ params }: { params: Promise<{ lang: Loc
 						</Card>
 
 						{/* Active Developers */}
-						<Card className="commit-card">
-							<div className="commit-header">
+						<Card className="commit-card rounded-xl border border-border bg-card/50 p-1.5 shadow-sm transition-all hover:border-primary/20 hover:shadow-md">
+							<div className="commit-header flex items-center gap-2 border-border/50 border-b">
 								<TrendingUp className="h-3 w-3" />
 								<span>{dict.pages.home.activeDevelopers}</span>
 							</div>
-							<CardContent className="space-y-3 p-4">
+							<CardContent className="grid max-h-56 max-w-md grid-cols-1 place-items-start gap-3 overflow-y-scroll py-1 pr-16">
 								{activeUsers.map((activeUser) => (
 									<Link
 										className="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-muted/50"
@@ -169,6 +176,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: Loc
 										<div className="min-w-0 flex-1">
 											<p className="truncate font-medium">{activeUser.name}</p>
 											<p className="text-muted-foreground text-sm">{activeUser._count.commits} commits</p>
+											<p className="text-muted-foreground text-sm">{activeUser._count.forks} forks</p>
 										</div>
 									</Link>
 								))}

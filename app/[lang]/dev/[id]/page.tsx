@@ -16,7 +16,7 @@ import prisma from "@/lib/prisma";
 import type { CommitWithDetails, ForkWithDetails } from "@/lib/types";
 
 // Forzar renderizado dinámico para permitir el uso de headers()
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface DevProfilePageProps {
 	params: Promise<{
