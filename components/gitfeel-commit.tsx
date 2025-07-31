@@ -142,11 +142,16 @@ export function GitfeelCommit({
 	return (
 		<div className="space-y-4">
 			{isFork ? (
-				<div className="space-y-4 rounded-xl border border-border bg-muted/30 p-4">
+				<div className="relative space-y-4 rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-pink-500/5 p-4 shadow-lg">
+					{/* Fork Connection Line */}
+					<div className="absolute top-16 bottom-4 left-6 w-0.5 bg-gradient-to-b from-purple-400 to-blue-400 opacity-60" />
+
 					{/* New Fork Header */}
 					{forkUser && (
 						<div className="flex items-center gap-3 text-muted-foreground text-sm">
-							<Repeat2 className="h-4 w-4 text-purple-400" />
+							<div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500/20 ring-2 ring-purple-400/30">
+								<Repeat2 className="h-4 w-4 text-purple-400" />
+							</div>
 							<Link className="font-semibold transition-colors hover:text-primary" href={`/${lang}/dev/${forkUser.id}`}>
 								{forkUser.name}
 							</Link>
@@ -160,14 +165,17 @@ export function GitfeelCommit({
 					)}
 
 					{/* Original Commit Card (nested inside the fork container) */}
-					<div className="commit-card mt-4 border-border border-t pt-4">
+					<div className="commit-card relative mt-4 ml-8 border-border border-t pt-4">
+						{/* Connection dot */}
+						<div className="-left-8 absolute top-6 h-3 w-3 rounded-full bg-blue-400 ring-2 ring-blue-400/30" />
 						{/* Commit Header */}
-						<div className="commit-header">
-							<Code className="h-3 w-3" />
-							<span>
-								{" "}
-								{dict.components.gitfeelCommit.commitBy} {commit.author.username}
-							</span>
+						<div className="commit-header flex flex-col items-start">
+							<div className="flex items-center gap-2">
+								<Code className="h-3 w-3" />
+								<span>
+									{dict.components.gitfeelCommit.commitBy} {commit.author.username}
+								</span>
+							</div>
 							<span className="ml-auto flex items-center gap-1">
 								<Calendar className="h-3 w-3" />
 								{formatDistanceToNow(new Date(commit.createdAt), {
@@ -444,12 +452,12 @@ export function GitfeelCommit({
 
 					{/* Fork Content (Comment & Tags) */}
 					{(forkContent || forkTags.length > 0) && (
-						<div className="space-y-3">
+						<div className="ml-10 space-y-3">
 							{forkContent && (
 								<div className="code-block">
 									<div className="mb-2 flex items-center gap-2 text-cyan-400">
 										<span className="text-green-400">$</span>
-										<span className="text-sm">{dict.components.gitfeelCommit.forkComment}</span>
+										<span className="text-sm">git change --amend -m</span>
 									</div>
 									<p className="border-blue-500/30 border-l-2 pl-4 text-slate-100 leading-relaxed">"{forkContent}"</p>
 								</div>
@@ -473,12 +481,14 @@ export function GitfeelCommit({
 				</div>
 			) : (
 				// Original Commit Card (when not a fork)
-				<div className="commit-card">
+				<div className="commit-card rounded-xl border border-border bg-card/50 p-4 shadow-sm transition-all hover:border-primary/20 hover:shadow-md">
 					{/* Commit Header */}
-					<div className="commit-header">
-						<Code className="h-3 w-3" />
-						<span>commit por {commit.author.username}</span>
-						<span className="ml-auto flex items-center gap-1">
+					<div className="commit-header mb-4 flex items-center gap-2 border-border/50 border-b pb-2">
+						<div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/20 ring-2 ring-blue-400/30">
+							<Code className="h-3 w-3 text-blue-400" />
+						</div>
+						<span className="font-medium text-sm">commit por {commit.author.username}</span>
+						<span className="ml-auto flex items-center gap-1 text-muted-foreground text-xs">
 							<Calendar className="h-3 w-3" />
 							{formatDistanceToNow(new Date(commit.createdAt), {
 								addSuffix: true,

@@ -136,18 +136,19 @@
 }
 
 .commit-card {
-	@apply bg-card border border-border rounded-xl overflow-hidden transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5;
+	@apply overflow-hidden transition-all duration-200;
 }
+
 .commit-card-fork {
-	@apply bg-card border border-purple-600 rounded-xl overflow-hidden transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5;
+	@apply bg-gradient-to-br from-purple-500/5 to-pink-500/5 border border-purple-500/30 rounded-xl overflow-hidden transition-all duration-200 hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10;
 }
 
 .commit-header {
-	@apply bg-muted/30 px-4 py-2 border-b border-border flex items-center gap-2 text-xs text-muted-foreground;
+	@apply text-xs text-muted-foreground;
 }
 
 .commit-content {
-	@apply p-4;
+	@apply space-y-4;
 }
 
 .code-block {
