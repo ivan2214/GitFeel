@@ -159,35 +159,6 @@ export function GitfeelCommit({
 						</div>
 					)}
 
-					{/* Fork Content (Comment & Tags) */}
-					{(forkContent || forkTags.length > 0) && (
-						<div className="space-y-3">
-							{forkContent && (
-								<div className="code-block">
-									<div className="mb-2 flex items-center gap-2 text-cyan-400">
-										<span className="text-green-400">$</span>
-										<span className="text-sm">{dict.components.gitfeelCommit.forkComment}</span>
-									</div>
-									<p className="border-blue-500/30 border-l-2 pl-4 text-slate-100 leading-relaxed">"{forkContent}"</p>
-								</div>
-							)}
-							{forkTags.length > 0 && (
-								<div className="flex flex-wrap gap-2">
-									{forkTags.map(({ tag }) => (
-										<Link href={`/${lang}/commits?tags=${tag.name}`} key={tag.id}>
-											<Badge
-												className="cursor-pointer border-purple-500/30 bg-gradient-to-r from-purple-500/10 to-pink-500/10 text-purple-400 transition-colors hover:border-purple-500/50"
-												variant="outline"
-											>
-												#{tag.name}
-											</Badge>
-										</Link>
-									))}
-								</div>
-							)}
-						</div>
-					)}
-
 					{/* Original Commit Card (nested inside the fork container) */}
 					<div className="commit-card mt-4 border-border border-t pt-4">
 						{/* Commit Header */}
@@ -470,6 +441,35 @@ export function GitfeelCommit({
 							</div>
 						</div>
 					</div>
+
+					{/* Fork Content (Comment & Tags) */}
+					{(forkContent || forkTags.length > 0) && (
+						<div className="space-y-3">
+							{forkContent && (
+								<div className="code-block">
+									<div className="mb-2 flex items-center gap-2 text-cyan-400">
+										<span className="text-green-400">$</span>
+										<span className="text-sm">{dict.components.gitfeelCommit.forkComment}</span>
+									</div>
+									<p className="border-blue-500/30 border-l-2 pl-4 text-slate-100 leading-relaxed">"{forkContent}"</p>
+								</div>
+							)}
+							{forkTags.length > 0 && (
+								<div className="flex flex-wrap gap-2">
+									{forkTags.map(({ tag }) => (
+										<Link href={`/${lang}/commits?tags=${tag.name}`} key={tag.id}>
+											<Badge
+												className="cursor-pointer border-purple-500/30 bg-gradient-to-r from-purple-500/10 to-pink-500/10 text-purple-400 transition-colors hover:border-purple-500/50"
+												variant="outline"
+											>
+												#{tag.name}
+											</Badge>
+										</Link>
+									))}
+								</div>
+							)}
+						</div>
+					)}
 				</div>
 			) : (
 				// Original Commit Card (when not a fork)

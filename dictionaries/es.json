@@ -158,7 +158,7 @@
 		},
 		"gitfeelCommit": {
 			"forkedThis": "forkeó esto",
-			"forkComment": "comentario del fork",
+			"forkComment": "Commit sobre el fork",
 			"commitBy": "commit por",
 			"commitAttachment": "Adjunto del commit",
 			"forkThisCommit": "Forkear este commit",
