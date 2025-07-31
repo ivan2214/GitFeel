@@ -1,6 +1,6 @@
 import { Hash, TrendingUp } from "lucide-react";
 import Link from "next/link";
-import { GitfeelCommit } from "@/components/gitfeel-commit";
+
 import { GitfeelComposer } from "@/components/gitfeel-composer";
 import { InfiniteCommits } from "@/components/infinite-commits";
 import { Badge } from "@/components/ui/badge";
@@ -114,7 +114,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: Loc
 				<div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
 					{/* Main Feed */}
 					<div className="space-y-6 lg:col-span-2">
-						<GitfeelComposer dict={dict} user={user} />
+						<GitfeelComposer dict={dict} lang={lang} user={user} />
 
 						<InfiniteCommits
 							dict={dict}

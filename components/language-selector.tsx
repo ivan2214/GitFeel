@@ -34,9 +34,9 @@ export function LanguageSelector({ lang }: LanguageSelectorProps) {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button className="gap-2" size="sm" variant="outline">
+				<Button className="flex items-center gap-2" size="sm" variant="outline">
 					<Globe className="h-4 w-4" />
-					<span className="hidden sm:inline">{lang}</span>
+					<span className="hidden sm:inline">{lang === "es" ? "🇪🇸 Español" : "🇺🇸 English"}</span>
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end">

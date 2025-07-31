@@ -19,6 +19,7 @@
 	},
 	"dependencies": {
 		"@ai-sdk/google": "^1.2.22",
+		"@ai-sdk/rsc": "1.0.0-canary.22",
 		"@aws-sdk/client-s3": "^3.856.0",
 		"@aws-sdk/s3-request-presigner": "^3.856.0",
 		"@formatjs/intl-localematcher": "^0.6.1",

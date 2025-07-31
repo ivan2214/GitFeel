@@ -10,13 +10,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { type UploadedFile, Uploader } from "@/components/uploader";
 import { useAction } from "@/hooks/use-action";
 import { createCommit, suggestTags } from "@/lib/actions/commits";
-import type { Dictionary } from "@/lib/dictionaries";
+import type { Dictionary, Locale } from "@/lib/dictionaries";
 import type { User } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import type { TagInput } from "@/schemas/profile";
 
-export function GitfeelComposer({ user, dict }: { user: User | null; dict: Dictionary }) {
+export function GitfeelComposer({ user, dict, lang }: { lang: Locale; user: User | null; dict: Dictionary }) {
 	const [content, setContent] = useState("");
-	const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
-	const [selectedTags, setSelectedTags] = useState<string[]>([]);
+	const [suggestedTags, setSuggestedTags] = useState<TagInput[]>([]);
+	const [selectedTags, setSelectedTags] = useState<TagInput[]>([]);
 	const [showImageUpload, setShowImageUpload] = useState(false);
 	const [uploadedImage, setUploadedImage] = useState<UploadedFile | null>(null);
 	const [isLoadingTags, setIsLoadingTags] = useState(false);
@@ -40,7 +42,9 @@ export function GitfeelComposer({ user, dict }: { user: User | null; dict: Dicti
 			if (text.length > 10) {
 				setIsLoadingTags(true);
 				try {
-					const tags = await suggestTags(text);
+					const { tags } = await suggestTags(text, lang);
+					console.log("tags", tags);
+
 					setSuggestedTags(tags);
 				} catch (error) {
 					console.error("Error getting tag suggestions:", error);
@@ -69,13 +73,13 @@ export function GitfeelComposer({ user, dict }: { user: User | null; dict: Dicti
 		});
 	};
 
-	const addTag = (tag: string) => {
+	const addTag = (tag: TagInput) => {
 		if (!selectedTags.includes(tag) && selectedTags.length < 5) {
 			setSelectedTags([...selectedTags, tag]);
 		}
 	};
 
-	const removeTag = (tag: string) => {
+	const removeTag = (tag: TagInput) => {
 		setSelectedTags(selectedTags.filter((t) => t !== tag));
 	};
 
@@ -96,9 +100,9 @@ export function GitfeelComposer({ user, dict }: { user: User | null; dict: Dicti
 	const remainingChars = 280 - content.length;
 
 	return (
-		<div className="commit-card">
+		<div className="commit-card flex flex-col gap-2 rounded-xl border border-border bg-card/50 p-1.5 shadow-sm transition-all hover:border-primary/20 hover:shadow-md">
 			{/* Header */}
-			<div className="commit-header">
+			<div className="commit-header flex items-center gap-2 border-border/50 border-b p-2">
 				<Code className="h-3 w-3" />
 				<span>{dict.components.gitfeelComposer.newCommit}</span>
 				<span className="ml-auto text-primary">@{user.username}</span>
@@ -161,16 +165,18 @@ export function GitfeelComposer({ user, dict }: { user: User | null; dict: Dicti
 									<div className="flex flex-wrap gap-2">
 										{suggestedTags.map((tag) => (
 											<Badge
-												className={`cursor-pointer transition-colors ${
+												className={cn(
+													"cursor-pointer transition-colors",
 													selectedTags.includes(tag)
 														? "border-transparent bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-														: "border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-400 hover:border-blue-500/50"
-												}`}
-												key={tag}
+														: "border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-400 hover:border-blue-500/50",
+													tag.color,
+												)}
+												key={tag.name}
 												onClick={() => addTag(tag)}
 												variant={selectedTags.includes(tag) ? "default" : "outline"}
 											>
-												#{tag}
+												#{tag.name}
 											</Badge>
 										))}
 									</div>
@@ -181,8 +187,14 @@ export function GitfeelComposer({ user, dict }: { user: User | null; dict: Dicti
 							{selectedTags.length > 0 && (
 								<div className="flex flex-wrap gap-2">
 									{selectedTags.map((tag) => (
-										<Badge className="flex items-center gap-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white" key={tag}>
-											#{tag}
+										<Badge
+											className={cn(
+												"flex items-center gap-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white",
+												tag.color,
+											)}
+											key={tag.name}
+										>
+											#{tag.name}
 											<X className="h-3 w-3 cursor-pointer" onClick={() => removeTag(tag)} />
 										</Badge>
 									))}

@@ -114,7 +114,7 @@ export function InfiniteCommits({ initialCommits, initialForks, user, dict, lang
 
 	if (allPosts.length === 0) {
 		return (
-			<Card className="commit-card">
+			<Card className="commit-card relative mt-4 ml-8 border-border border-t pt-4">
 				<CardContent className="p-12 text-center">
 					<div className="code-block mb-4">
 						<p className="text-slate-400">$ git log --grep="{searchParams.query || searchParams.tags}"</p>
@@ -141,7 +141,11 @@ export function InfiniteCommits({ initialCommits, initialForks, user, dict, lang
 							dict={dict}
 							forkContent={post.data.content}
 							forkDate={new Date(post.data.createdAt)}
-							forkTags={post.data.tags}
+							forkTags={post.data.tags.map(({ tag }) => ({
+								name: tag.name,
+								id: tag.id,
+								color: tag.color,
+							}))}
 							forkUser={(post.data as ForkWithDetails).user}
 							isFork={true}
 							lang={lang}

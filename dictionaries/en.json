@@ -223,7 +223,11 @@
 			"tipBio": "• Write a bio that shows your personality",
 			"tipGithub": "• Link your GitHub to show your work",
 			"tipLocation": "• Use your location to connect with local devs",
-			"tipWebsite": "• Share your website or portfolio"
+			"tipWebsite": "• Share your website or portfolio",
+			"tag": {
+				"title": "Tags",
+				"selected": "Selected tags"
+			}
 		},
 		"commitDetail": {
 			"addPatch": "add patch",

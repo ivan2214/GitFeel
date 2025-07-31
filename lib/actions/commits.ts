@@ -1,22 +1,18 @@
 "use server";
 
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { generateText } from "ai";
+
+import { generateObject } from "ai";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import z from "zod";
 import type { Prisma } from "@/app/generated/prisma";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import type { CommitWithDetails, CreateCommitState, CreateForkState, ForkWithDetails, ToggleStarState, ToggleStashState } from "@/lib/types";
+import type { TagInput } from "@/schemas/profile";
 import type { Locale } from "../dictionaries";
 import { createNotification } from "./notifications"; // Import notification action
-
-const google = createGoogleGenerativeAI({
-	// custom settings
-	apiKey: process.env.GOOGLE_API_KEY,
-});
-
-const model = google("gemini-2.5-flash");
 
 export async function createCommit(_prevState: CreateCommitState, formData: FormData): Promise<CreateCommitState> {
 	try {
@@ -91,30 +87,147 @@ export async function createCommit(_prevState: CreateCommitState, formData: Form
 	}
 }
 
-export async function suggestTags(content: string): Promise<string[]> {
+const suggestTagsSchema = z.object({
+	tags: z
+		.array(
+			z.object({
+				name: z.string().describe("El nombre de la etiqueta ligada a la descripcion"),
+				color: z
+					.string()
+					.describe("El color de la etiqueta que sera de la forma de clases de tailwindcss por ejemplo : bg-emerald-500 text-white"),
+			}),
+		)
+		.describe("Una lista de etiquetas que seran ligadas a la descripcion del commit"),
+});
+
+const google = createGoogleGenerativeAI({
+	// custom settings
+	apiKey: process.env.GOOGLE_API_KEY,
+});
+
+const model = google("gemini-2.5-flash");
+
+/**
+ * Sugiere etiquetas (tags) relevantes para el contenido de un commit usando IA
+ * @param content - El contenido del commit para analizar
+ * @param lang - El idioma para las etiquetas sugeridas
+ * @returns Objeto con array de etiquetas sugeridas
+ */
+export async function suggestTags(content: string, lang: Locale) {
 	try {
 		if (!content?.trim() || content.length < 10) {
-			return [];
+			return { tags: [] };
 		}
 
-		const { text } = await generateText({
+		const { object: result } = await generateObject({
 			model,
-			system: `Eres un asistente que sugiere tags para posts de desarrolladores. 
-      Analiza el contenido y sugiere entre 1-3 tags relevantes en español, 
-      relacionados con programación, tecnología, emociones de developers, etc.
-      Responde solo con los tags separados por comas, sin explicaciones.
-      Ejemplos: javascript, frustración, debugging, react, burnout, aprendizaje`,
-			prompt: `Sugiere tags para este post de developer: "${content}"`,
-		});
+			system: `Eres un asistente que genera etiquetas para commits de desarrollo.
 
-		return text
-			.split(",")
-			.map((tag) => tag.trim().toLowerCase())
-			.filter(Boolean)
-			.slice(0, 3);
+Tu tarea es analizar el contenido del commit y generar entre 1 y 5 etiquetas relevantes.
+
+Debes devolver un objeto JSON con la siguiente estructura:
+{
+  "tags": [
+    {"name": "nombre_etiqueta", "color": "bg-color-500 text-white"},
+    {"name": "otra_etiqueta", "color": "bg-color-500 text-white"}
+  ]
+}
+
+Cada etiqueta debe tener:
+- name: nombre descriptivo de la etiqueta
+- color: clases de TailwindCSS para el color (formato: "bg-[color]-500 text-white")
+
+Idioma de las etiquetas: ${lang === "es" ? "español" : "inglés"}
+
+Colores sugeridos:
+- Frontend/UI: bg-blue-500 text-white
+- Backend/API: bg-green-500 text-white
+- Database: bg-purple-500 text-white
+- Testing: bg-yellow-500 text-black
+- Bug Fix: bg-red-500 text-white
+- Feature: bg-indigo-500 text-white
+- Documentation: bg-gray-500 text-white
+- Performance: bg-orange-500 text-white
+
+Genera etiquetas específicas y relevantes basadas en el contenido del commit.`,
+			prompt: `Analiza este commit y genera etiquetas relevantes: "${content}"`,
+			schema: suggestTagsSchema,
+			experimental_repairText: async (options) => {
+				const { text } = options;
+
+				console.log("EXperimental repair text", text);
+
+				try {
+					// Intentar parsear si el texto viene como string JSON
+					if (typeof text === "string") {
+						let trimmedText = text.trim();
+						console.log("Texto original:", trimmedText);
+
+						// Caso especial: El texto es un string JSON escapado que contiene otro JSON
+						if (trimmedText.startsWith('"') && trimmedText.endsWith('"')) {
+							console.log("Detectado string JSON escapado");
+							try {
+								// Parsear el string externo para obtener el JSON interno
+								trimmedText = JSON.parse(trimmedText);
+								console.log("JSON desenescapado:", trimmedText);
+							} catch (unescapeError) {
+								console.log("Error al desenescapar:", unescapeError);
+							}
+						}
+
+						// Caso 1: El texto es un objeto JSON que ya tiene la estructura correcta
+						if (trimmedText.startsWith("{") && trimmedText.includes('"tags"')) {
+							console.log("Detectado objeto con tags");
+							const parsedObject = JSON.parse(trimmedText);
+
+							// Verificar que tenga la estructura correcta
+							if (parsedObject.tags && Array.isArray(parsedObject.tags)) {
+								console.log("Estructura correcta encontrada", parsedObject);
+								// Validar y limpiar las etiquetas
+								const validTags = parsedObject.tags.filter((tag: TagInput) => tag.name && tag.color).slice(0, 5); // Limitar a 5 etiquetas máximo
+
+								const cleanedObject = { tags: validTags };
+								console.log("Objeto limpio devuelto", cleanedObject);
+								return JSON.stringify(cleanedObject);
+							}
+						}
+
+						// Caso 2: El texto es un array JSON directo
+						if (trimmedText.startsWith("[")) {
+							console.log("Detectado array directo");
+							const parsedArray = JSON.parse(trimmedText);
+
+							// Verificar que sea un array válido
+							if (Array.isArray(parsedArray)) {
+								// Convertir el array a la estructura esperada
+								const fixedObject = {
+									tags: parsedArray.map((item) => ({
+										name: item.name || "",
+										color: item.color || "bg-gray-500 text-white",
+									})),
+								};
+								console.log("Array convertido a objeto", fixedObject);
+								return JSON.stringify(fixedObject);
+							}
+						}
+					}
+				} catch (parseError) {
+					console.error("Error al parsear en experimental_repairText:", parseError);
+				}
+
+				// Si no se puede reparar, devolver una estructura vacía válida
+				console.log("Devolviendo estructura vacía por defecto");
+				return JSON.stringify({ tags: [] });
+			},
+		});
+		console.log(result);
+
+		return {
+			tags: (result as { tags: TagInput[] }).tags,
+		};
 	} catch (error) {
 		console.error("Error suggesting tags:", error);
-		return [];
+		return { tags: [] };
 	}
 }
 
@@ -244,7 +357,7 @@ export async function createFork(
 	}: {
 		commitId: string;
 		content?: string;
-		tagNames?: string[];
+		tagNames?: TagInput[];
 		lang: Locale;
 	},
 ): Promise<CreateForkState> {
@@ -288,7 +401,7 @@ export async function createFork(
 
 		// Process tags for the fork if provided
 		if (tagNames?.length) {
-			const tags = tagNames.map((tag) => tag.trim().toLowerCase()).filter(Boolean);
+			const tags = tagNames.map((tag) => tag.name.toLowerCase()).filter(Boolean);
 
 			for (const tagName of tags) {
 				let tag = await prisma.tag.findUnique({

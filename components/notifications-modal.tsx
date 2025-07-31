@@ -94,7 +94,7 @@ export function NotificationsModal({ initialUnreadCount }: NotificationsModalPro
 	return (
 		<Dialog onOpenChange={setOpen} open={open}>
 			<DialogTrigger asChild>
-				<Button className="relative" size="icon" variant="ghost">
+				<Button className="relative" size="icon" variant="outline">
 					<Bell className="h-5 w-5" />
 					{unreadCount > 0 && (
 						<span className="-top-1 -right-1 absolute flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-xs">

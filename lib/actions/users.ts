@@ -5,9 +5,14 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import type { ToggleFollowState, UpdateProfileState } from "@/lib/types";
+import { type ProfileFormInput, ProfileSchema } from "@/schemas/profile";
+import type { Locale } from "../dictionaries";
 import { createNotification } from "./notifications"; // Import notification action
 
-export async function updateProfile(formData: FormData): Promise<UpdateProfileState> {
+export async function updateProfile(
+	_prevState: UpdateProfileState,
+	{ data, lang }: { data: ProfileFormInput; lang: Locale },
+): Promise<UpdateProfileState> {
 	try {
 		const session = await auth.api.getSession({
 			headers: await headers(),
@@ -17,12 +22,18 @@ export async function updateProfile(formData: FormData): Promise<UpdateProfileSt
 			return { errorMessage: "Debes estar autenticado" };
 		}
 
-		const name = formData.get("name") as string;
-		const bio = formData.get("bio") as string;
-		const location = formData.get("location") as string;
-		const website = formData.get("website") as string;
-		const githubUrl = formData.get("githubUrl") as string;
-		const twitterUrl = formData.get("twitterUrl") as string;
+		console.log(data);
+
+		const validateFields = ProfileSchema.safeParse(data);
+
+		if (!validateFields.success) {
+			const error = validateFields.error;
+			console.log(error);
+
+			return { errorMessage: `Error al procesar los datos ${error.message}` };
+		}
+
+		const { name, bio, location, website, githubUrl, twitterUrl, username } = validateFields.data;
 
 		await prisma.user.update({
 			where: { id: session.user.id },
@@ -33,16 +44,16 @@ export async function updateProfile(formData: FormData): Promise<UpdateProfileSt
 				website: website?.trim() || null,
 				githubUrl: githubUrl?.trim() || null,
 				twitterUrl: twitterUrl?.trim() || null,
+				username: username?.trim() || session.user.username,
 			},
 		});
 
-		revalidatePath("/profile");
-		revalidatePath(`/dev/${session.user.id}`);
-
-		return { successMessage: "Perfil actualizado exitosamente" };
+		revalidatePath(`/${lang}/profile`);
+		revalidatePath(`/${lang}/dev/${session.user.id}`);
+		return { successMessage: "Perfil actualizado correctamente" };
 	} catch (error) {
 		console.error("Error updating profile:", error);
-		return { errorMessage: "Error al actualizar el perfil" };
+		return { errorMessage: "Error al procesar los datos" };
 	}
 }
 

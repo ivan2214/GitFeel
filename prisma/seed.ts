@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker/locale/es";
 import { PrismaClient } from "@/app/generated/prisma";
 import type { Commit, Tag, User } from "@/lib/types";
+import { generateRandomColorTailwind } from "@/lib/utils";
 
 const prisma = new PrismaClient();
 
@@ -90,16 +91,7 @@ async function cleanDatabase() {
 async function createTags() {
 	const tagNames = ["JavaScript", "TypeScript", "React", "Next.js", "Node.js", "CSS", "Tailwind", "Prisma"];
 
-	const tagColors = [
-		"#3b82f6", // blue
-		"#10b981", // green
-		"#f59e0b", // amber
-		"#ef4444", // red
-		"#8b5cf6", // violet
-		"#ec4899", // pink
-		"#6366f1", // indigo
-		"#14b8a6", // teal
-	];
+	
 
 	const tags = [];
 
@@ -107,7 +99,7 @@ async function createTags() {
 		const tag = await prisma.tag.create({
 			data: {
 				name: tagNames[i],
-				color: tagColors[i],
+				color: generateRandomColorTailwind()
 			},
 		});
 		tags.push(tag);

@@ -6,6 +6,7 @@ import { debounce } from "lodash";
 import { Archive, Calendar, Code, GitFork, MessageCircle, MoreHorizontal, Plus, Repeat2, Sparkles, Star, X } from "lucide-react";
 import Link from "next/link";
 import { startTransition, useCallback, useEffect, useState } from "react";
+import type { TagInput } from "@/app/[lang]/profile/components/profile-form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAction } from "@/hooks/use-action";
 import { createFork, suggestTags, toggleStar, toggleStash } from "@/lib/actions/commits";
 import type { Dictionary, Locale } from "@/lib/dictionaries";
-import type { CommitWithDetails, User } from "@/lib/types";
+import type { CommitWithDetails, Tag, User } from "@/lib/types";
+import { cn, generateRandomColorTailwind } from "@/lib/utils";
 import { ImageWithSkeleton } from "./image-with-skeleton";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -43,7 +45,7 @@ interface GitfeelCommitProps {
 	forkUser?: User | null;
 	forkContent?: string | null;
 	forkDate?: Date;
-	forkTags?: { tag: { id: string; name: string } }[]; // New prop for fork's tags
+	forkTags?: Tag[]; // New prop for fork's tags
 }
 
 export function GitfeelCommit({
@@ -60,9 +62,9 @@ export function GitfeelCommit({
 }: GitfeelCommitProps) {
 	const [forkDialogContent, setForkDialogContent] = useState("");
 	const [showForkDialog, setShowForkDialog] = useState(false);
-	const [forkTagInput, setForkTagInput] = useState(""); // State for tag input in fork modal
-	const [forkSuggestedTags, setForkSuggestedTags] = useState<string[]>([]); // State for suggested tags in fork modal
-	const [forkSelectedTags, setForkSelectedTags] = useState<string[]>([]); // State for selected tags in fork modal
+	const [forkTagInput, setForkTagInput] = useState<TagInput>({ name: "", color: "" }); // State for tag input in fork modal
+	const [forkSuggestedTags, setForkSuggestedTags] = useState<TagInput[]>([]); // State for suggested tags in fork modal
+	const [forkSelectedTags, setForkSelectedTags] = useState<TagInput[]>([]); // State for selected tags in fork modal
 	const [isLoadingForkTags, setIsLoadingForkTags] = useState(false); // State for loading tags in fork modal
 
 	const { execute: executeStar, pending: starPending } = useAction(
@@ -104,7 +106,9 @@ export function GitfeelCommit({
 			if (text.length > 10) {
 				setIsLoadingForkTags(true);
 				try {
-					const tags = await suggestTags(text);
+					const { tags } = await suggestTags(text, lang);
+					console.log("tags", tags);
+
 					setForkSuggestedTags(tags);
 				} catch (error) {
 					console.error("Error getting fork tag suggestions:", error);
@@ -122,29 +126,22 @@ export function GitfeelCommit({
 		debouncedSuggestForkTags(forkDialogContent);
 	}, [forkDialogContent, debouncedSuggestForkTags]);
 
-	const addForkTag = (tag: string) => {
+	const addForkTag = (tag: TagInput) => {
 		if (!forkSelectedTags.includes(tag) && forkSelectedTags.length < 5) {
 			setForkSelectedTags([...forkSelectedTags, tag]);
 		}
 	};
 
-	const removeForkTag = (tag: string) => {
+	const removeForkTag = (tag: TagInput) => {
 		setForkSelectedTags(forkSelectedTags.filter((t) => t !== tag));
 	};
 
 	const addCustomForkTag = () => {
-		if (forkTagInput.trim() && !forkSelectedTags.includes(forkTagInput.trim())) {
-			addForkTag(forkTagInput.trim().toLowerCase());
-			setForkTagInput("");
+		if (forkTagInput.name && !forkSelectedTags.includes(forkTagInput)) {
+			addForkTag(forkTagInput);
+			setForkTagInput({ name: "", color: "" });
 		}
 	};
-
-	console.log({
-		commit,
-		user,
-		forkUser,
-		forkContent,
-	});
 
 	return (
 		<div className="space-y-4">
@@ -159,7 +156,17 @@ export function GitfeelCommit({
 							<div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500/20 ring-2 ring-purple-400/30">
 								<Repeat2 className="h-4 w-4 text-purple-400" />
 							</div>
-							<Link className="font-semibold transition-colors hover:text-primary" href={`/${lang}/dev/${forkUser.id}`}>
+
+							<Link
+								className="flex items-center gap-2 font-semibold text-primary transition-all hover:text-purple-600 hover:opacity-80"
+								href={`/${lang}/dev/${forkUser.id}`}
+							>
+								<Avatar className="h-10 w-10 ring-2 ring-primary/10">
+									<AvatarImage src={forkUser.image || ""} />
+									<AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+										{forkUser.name?.charAt(0).toUpperCase()}
+									</AvatarFallback>
+								</Avatar>
 								{forkUser.name}
 							</Link>
 							<span className="text-xs">{dict.components.gitfeelCommit.forkedThis}</span>
@@ -207,7 +214,7 @@ export function GitfeelCommit({
 								<div className="flex-1 space-y-3">
 									<div className="flex items-center gap-2">
 										<Link
-											className="font-semibold transition-colors hover:text-primary"
+											className="font-semibold text-primary transition-colors hover:text-purple-600"
 											href={`/${lang}/dev/${commit.author.id}`}
 										>
 											{commit.author.name}
@@ -240,7 +247,10 @@ export function GitfeelCommit({
 											{commit.tags.map(({ tag }) => (
 												<Link href={`/${lang}/commits?tags=${tag.name}`} key={tag.id}>
 													<Badge
-														className="cursor-pointer border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-400 transition-colors hover:border-blue-500/50"
+														className={cn(
+															"cursor-pointer border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-400 transition-colors hover:border-blue-500/50",
+															tag.color,
+														)}
 														variant="outline"
 													>
 														#{tag.name}
@@ -313,16 +323,18 @@ export function GitfeelCommit({
 																	<div className="flex flex-wrap gap-2">
 																		{forkSuggestedTags.map((tag) => (
 																			<Badge
-																				className={`cursor-pointer transition-colors ${
-																					forkSelectedTags.includes(tag)
-																						? "border-purple-500 bg-purple-600 text-white"
-																						: "border-purple-500 bg-purple-900/50 text-purple-300 hover:bg-purple-800/50"
-																				}`}
-																				key={tag}
+																				className={cn(
+																					"cursor-pointer transition-colors hover:bg-purple-800/50",
+																					forkSelectedTags.includes(tag) && "bg-purple-600 text-white",
+																					tag.color
+																						? tag.color
+																						: "bg-purple-900/50 text-purple-300 hover:bg-purple-800/50",
+																				)}
+																				key={tag.name}
 																				onClick={() => addForkTag(tag)}
 																				variant={forkSelectedTags.includes(tag) ? "default" : "outline"}
 																			>
-																				#{tag}
+																				#{tag.name}
 																			</Badge>
 																		))}
 																	</div>
@@ -339,9 +351,9 @@ export function GitfeelCommit({
 																		{forkSelectedTags.map((tag) => (
 																			<Badge
 																				className="flex items-center gap-1 bg-purple-600 text-white"
-																				key={tag}
+																				key={tag.name}
 																			>
-																				#{tag}
+																				#{tag.name}
 																				<X
 																					className="h-3 w-3 cursor-pointer"
 																					onClick={() => removeForkTag(tag)}
@@ -360,15 +372,19 @@ export function GitfeelCommit({
 																<div className="flex gap-2">
 																	<Input
 																		className="border-border bg-muted/50"
-																		onChange={(e) => setForkTagInput(e.target.value)}
-																		onKeyDown={(e) => e.key === "Enter" && addCustomForkTag()}
+																		onChange={(e) =>
+																			setForkTagInput({
+																				name: e.target.value,
+																				color: generateRandomColorTailwind(),
+																			})
+																		}
 																		placeholder={dict.components.gitfeelCommit.forkTagPlaceholder}
-																		value={forkTagInput}
+																		value={forkTagInput.name}
 																	/>
 																	<Button
 																		className="gitfeel-button"
 																		disabled={
-																			!forkTagInput.trim() || forkSelectedTags.includes(forkTagInput.trim())
+																			!forkTagInput.name.trim() || forkSelectedTags.includes(forkTagInput)
 																		}
 																		onClick={addCustomForkTag}
 																		size="sm"
@@ -471,7 +487,7 @@ export function GitfeelCommit({
 							)}
 							{forkTags.length > 0 && (
 								<div className="flex flex-wrap gap-2">
-									{forkTags.map(({ tag }) => (
+									{forkTags.map((tag) => (
 										<Link href={`/${lang}/commits?tags=${tag.name}`} key={tag.id}>
 											<Badge
 												className="cursor-pointer border-purple-500/30 bg-gradient-to-r from-purple-500/10 to-pink-500/10 text-purple-400 transition-colors hover:border-purple-500/50"
@@ -518,7 +534,10 @@ export function GitfeelCommit({
 
 							<div className="flex-1 space-y-3">
 								<div className="flex items-center gap-2">
-									<Link className="font-semibold transition-colors hover:text-primary" href={`/${lang}/dev/${commit.author.id}`}>
+									<Link
+										className="font-semibold text-primary transition-colors hover:text-purple-600"
+										href={`/${lang}/dev/${commit.author.id}`}
+									>
 										{commit.author.name}
 									</Link>
 									<span className="text-muted-foreground">@{commit.author.username}</span>
@@ -530,7 +549,9 @@ export function GitfeelCommit({
 											<span className="text-green-400">$</span>
 											<span className="text-sm">git commit -m</span>
 										</div>
-										<p className="border-blue-500/30 border-l-2 pl-4 text-slate-100 leading-relaxed">"{commit.content}"</p>
+										<p className="line-clamp-6 border-blue-500/30 border-l-2 pl-4 text-slate-100 leading-relaxed">
+											"{commit.content}"
+										</p>
 									</div>
 								</Link>
 
@@ -549,7 +570,10 @@ export function GitfeelCommit({
 										{commit.tags.map(({ tag }) => (
 											<Link href={`/${lang}/commits?tags=${tag.name}`} key={tag.id}>
 												<Badge
-													className="cursor-pointer border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-400 transition-colors hover:border-blue-500/50"
+													className={cn(
+														"cursor-pointer border-purple-500/30 bg-gradient-to-r from-purple-500/10 to-pink-500/10 text-purple-400 transition-colors hover:border-purple-500/50",
+														tag.color,
+													)}
 													variant="outline"
 												>
 													#{tag.name}
@@ -620,16 +644,22 @@ export function GitfeelCommit({
 																<div className="flex flex-wrap gap-2">
 																	{forkSuggestedTags.map((tag) => (
 																		<Badge
-																			className={`cursor-pointer transition-colors ${
+																			/* 																			className={`cursor-pointer transition-colors ${
 																				forkSelectedTags.includes(tag)
 																					? "border-purple-500 bg-purple-600 text-white"
 																					: "border-purple-500 bg-purple-900/50 text-purple-300 hover:bg-purple-800/50"
-																			}`}
-																			key={tag}
+																			}`} */
+																			className={cn(
+																				"cursor-pointer transition-colors",
+																				forkSelectedTags.includes(tag)
+																					? "border-purple-500 bg-purple-600 text-white"
+																					: "border-purple-500 bg-purple-900/50 text-purple-300 hover:bg-purple-800/50",
+																			)}
+																			key={tag.name}
 																			onClick={() => addForkTag(tag)}
 																			variant={forkSelectedTags.includes(tag) ? "default" : "outline"}
 																		>
-																			#{tag}
+																			#{tag.name}
 																		</Badge>
 																	))}
 																</div>
@@ -644,12 +674,17 @@ export function GitfeelCommit({
 																</Label>
 																<div className="flex flex-wrap gap-2">
 																	{forkSelectedTags.map((tag) => (
-																		<Badge className="flex items-center gap-1 bg-purple-600 text-white" key={tag}>
-																			#{tag}
-																			<X
-																				className="h-3 w-3 cursor-pointer"
+																		<Badge
+																			className="flex items-center gap-1 bg-purple-600 text-white"
+																			key={tag.name}
+																		>
+																			#{tag.name}
+																			<Button
+																				className="flex h-4 w-4 items-center justify-center rounded-full bg-purple-600/50"
 																				onClick={() => removeForkTag(tag)}
-																			/>
+																			>
+																				<X className="h-3 w-3 cursor-pointer" />
+																			</Button>
 																		</Badge>
 																	))}
 																</div>
@@ -664,14 +699,19 @@ export function GitfeelCommit({
 															<div className="flex gap-2">
 																<Input
 																	className="border-border bg-muted/50"
-																	onChange={(e) => setForkTagInput(e.target.value)}
+																	onChange={(e) =>
+																		setForkTagInput({
+																			name: e.target.value,
+																			color: generateRandomColorTailwind(),
+																		})
+																	}
 																	onKeyDown={(e) => e.key === "Enter" && addCustomForkTag()}
 																	placeholder={dict.components.gitfeelCommit.forkTagPlaceholder}
-																	value={forkTagInput}
+																	value={forkTagInput.name}
 																/>
 																<Button
 																	className="gitfeel-button"
-																	disabled={!forkTagInput.trim() || forkSelectedTags.includes(forkTagInput.trim())}
+																	disabled={!forkTagInput.name.trim() || forkSelectedTags.includes(forkTagInput)}
 																	onClick={addCustomForkTag}
 																	size="sm"
 																>

@@ -315,10 +315,12 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 
 					{/* Commits Feed */}
 					<div className="space-y-6 lg:col-span-2">
-						<Card className="commit-card">
-							<div className="commit-header">
-								<GitCommit className="h-3 w-3" />
-								<span>{dict.pages.dev.recentCommits}</span>
+						<Card className="commit-card relative border-border border-t p-4">
+							<div className="commit-header flex flex-col items-start">
+								<section className="flex items-center gap-3">
+									<GitCommit className="h-3 w-3" />
+									<span>{dict.pages.dev.recentCommits}</span>
+								</section>
 								<span className="ml-auto">{user.commits.length} commits</span>
 							</div>
 						</Card>
@@ -345,8 +347,8 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 						</div>
 
 						{allPosts.length === 0 && (
-							<Card className="commit-card">
-								<CardContent className="p-12 text-center">
+							<Card className="commit-card relative border-border border-t p-4">
+								<CardContent className="commit-content p-12 text-center">
 									<div className="code-block mb-4">
 										<p className="text-slate-400">$ git log --author="{user.username}"</p>
 										<p className="text-yellow-400">{dict.pages.dev.noCommitsFound}</p>

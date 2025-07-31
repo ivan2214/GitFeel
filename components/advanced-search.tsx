@@ -9,10 +9,20 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Dictionary, Locale } from "@/lib/dictionaries";
+import type { Tag } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { Label } from "./ui/label";
 
 interface AdvancedSearchProps {
-	allTags: Array<{ id: string; name: string; _count: { commits: number } }>;
+	allTags: Tag<{
+		include: {
+			_count: {
+				select: {
+					commits: true;
+				};
+			};
+		};
+	}>[];
 	lang: Locale;
 	dic: Dictionary;
 }
@@ -156,11 +166,13 @@ export function AdvancedSearch({ allTags, dic, lang }: AdvancedSearchProps) {
 					<div className="flex max-h-32 flex-wrap gap-2 overflow-y-auto">
 						{allTags.slice(0, 20).map((tag) => (
 							<Badge
-								className={`cursor-pointer transition-colors ${
+								className={cn(
+									"cursor-pointer transition-colors",
 									selectedTags.includes(tag.name)
-										? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-										: "border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-400 hover:border-blue-500/50"
-								}`}
+										? "border-transparent bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+										: "border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-400 hover:border-blue-500/50",
+									tag.color,
+								)}
 								key={tag.id}
 								onClick={() => (selectedTags.includes(tag.name) ? removeTag(tag.name) : addTag(tag.name))}
 								variant={selectedTags.includes(tag.name) ? "default" : "outline"}
