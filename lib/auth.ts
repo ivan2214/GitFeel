@@ -16,14 +16,44 @@ export const auth = betterAuth({
 		discord: {
 			clientId: process.env.DISCORD_CLIENT_ID as string,
 			clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
+			mapProfileToUser: (profile) => {
+				console.log("Discord profile:");
+				console.dir(profile, {
+					depth: null,
+				});
+
+				return {
+					username: profile.username,
+				};
+			},
 		},
 		github: {
 			clientId: process.env.GITHUB_CLIENT_ID as string,
 			clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+			mapProfileToUser: (profile) => {
+				console.log("GitHub profile:");
+				console.dir(profile, {
+					depth: null,
+				});
+
+				return {
+					username: profile.login,
+				};
+			},
 		},
 		google: {
 			clientId: process.env.GOOGLE_CLIENT_ID as string,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+			mapProfileToUser: (profile) => {
+				console.log("Google profile:");
+				console.dir(profile, {
+					depth: null,
+				});
+
+				return {
+					username: profile.name,
+				};
+			},
 		},
 	},
 	plugins: [nextCookies()],

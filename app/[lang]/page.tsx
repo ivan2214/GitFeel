@@ -1,9 +1,9 @@
-import { Hash, TrendingUp, Users } from "lucide-react";
+import { Hash, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { GitfeelCommit } from "@/components/gitfeel-commit";
 import { GitfeelComposer } from "@/components/gitfeel-composer";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { getCurrentUser } from "@/data/user";
 import { getCommitsWithForks } from "@/lib/actions/commits";
@@ -125,26 +125,6 @@ export default async function HomePage({ params }: { params: Promise<{ lang: Loc
 
 					{/* Sidebar */}
 					<div className="space-y-6">
-						{!user && (
-							<Card className="commit-card">
-								<div className="commit-header">
-									<Users className="h-3 w-3" />
-									<span>{dict.pages.home.joinGitfeel}</span>
-								</div>
-								<CardContent className="space-y-3 p-4">
-									<p className="text-muted-foreground text-sm">{dict.pages.home.joinDescription}</p>
-									<div className="space-y-2">
-										<Button asChild className="gitfeel-button w-full">
-											<Link href={`/${lang}/auth/signin`}>{dict.pages.home.signIn}</Link>
-										</Button>
-										<Button asChild className="w-full bg-transparent" variant="outline">
-											<Link href={`/${lang}/auth/signup`}>{dict.pages.home.signUp}</Link>
-										</Button>
-									</div>
-								</CardContent>
-							</Card>
-						)}
-
 						{/* Trending Tags */}
 						<Card className="commit-card">
 							<div className="commit-header">

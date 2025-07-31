@@ -1,6 +1,6 @@
 import { ArrowLeft, Code, Info, Save } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,7 +20,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ lang: 
 	const user = await getCurrentUser();
 
 	if (!user) {
-		redirect(`/${lang}/auth/signin`);
+		notFound();
 	}
 
 	return (
