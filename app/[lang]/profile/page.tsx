@@ -11,6 +11,9 @@ import { getCurrentUser } from "@/data/user";
 import { updateProfile } from "@/lib/actions/users";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 
+// Forzar renderizado dinámico para permitir el uso de headers()
+export const dynamic = "force-dynamic";
+
 export default async function ProfilePage({ params }: { params: Promise<{ lang: Locale }> }) {
 	const { lang } = await params;
 	const dict = await getDictionary(lang);

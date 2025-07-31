@@ -7,6 +7,9 @@ import { getCommitsWithForks } from "@/lib/actions/commits";
 import { type Dictionary, getDictionary, type Locale } from "@/lib/dictionaries";
 import prisma from "@/lib/prisma";
 
+// Forzar renderizado dinámico para permitir el uso de headers()
+export const dynamic = "force-dynamic";
+
 interface CommitsPageProps {
 	params: Promise<{ lang: Locale }>;
 	searchParams: Promise<{

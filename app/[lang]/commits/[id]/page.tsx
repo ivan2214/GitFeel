@@ -14,6 +14,9 @@ import { createPatch } from "@/lib/actions/patches";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import prisma from "@/lib/prisma";
 
+// Forzar renderizado dinámico para permitir el uso de headers()
+export const dynamic = "force-dynamic";
+
 interface CommitDetailPageProps {
 	params: Promise<{
 		id: string;

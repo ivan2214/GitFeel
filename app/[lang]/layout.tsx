@@ -8,6 +8,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { getCurrentUser } from "@/data/user";
 import { getDictionary, type Locale, locales } from "@/lib/dictionaries";
 
+// Forzar renderizado dinámico para permitir el uso de headers()
+export const dynamic = "force-dynamic";
+
 const inter = Inter({ subsets: ["latin"] });
 
 /**
