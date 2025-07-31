@@ -497,3 +497,26 @@ export async function getCommitsWithForks(options: {
 
 	return { commits, forks };
 }
+
+/**
+ * Acción del servidor para cargar más commits y forks.
+ * Esta función se utiliza para implementar la funcionalidad de infinite scroll
+ * sin necesidad de usar una API route.
+ */
+export async function loadMoreCommits(options: {
+	tags?: string[];
+	query?: string;
+	sortBy?: "recent" | "popular" | "stars" | "forks";
+	offset: number;
+	limit?: number;
+}): Promise<{
+	commits: CommitWithDetails[];
+	forks: ForkWithDetails[];
+	hasMore: boolean;
+}> {
+	const { commits, forks } = await getCommitsWithForks(options);
+	// Determinar si hay más resultados disponibles
+	const hasMore = commits.length > 0 || forks.length > 0;
+
+	return { commits, forks, hasMore };
+}

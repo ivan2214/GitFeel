@@ -171,6 +171,11 @@
 			"editCommit": "Editar commit",
 			"deleteCommit": "Eliminar commit",
 			"forkTagPlaceholder": "Agregar tag personalizado"
+		},
+		"infiniteCommits": {
+			"loadMore": "Cargar más commits",
+			"loading": "Cargando más commits...",
+			"allCommitsLoaded": "Has visto todos los commits disponibles"
 		}
 	},
 	"meta": {

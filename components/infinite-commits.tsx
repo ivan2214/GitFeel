@@ -1,10 +1,11 @@
 "use client";
 
 import { Code, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { GitfeelCommit } from "@/components/gitfeel-commit";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { loadMoreCommits } from "@/lib/actions/commits";
 import type { Dictionary, Locale } from "@/lib/dictionaries";
 import type { CommitWithDetails, ForkWithDetails, User } from "@/lib/types";
 
@@ -47,21 +48,31 @@ export function InfiniteCommits({ initialCommits, initialForks, user, dict, lang
 		...forks.map((fork) => ({ type: "fork", data: fork, createdAt: fork.createdAt })),
 	].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-	const loadMore = async () => {
+	// Referencia para mantener la posición de desplazamiento
+	const scrollPositionRef = useRef(0);
+
+	// Memorizar la función loadMore para evitar recreaciones innecesarias
+	const loadMore = useCallback(async () => {
 		if (loading || !hasMore) return;
+
+		// Guardar la posición actual de desplazamiento
+		scrollPositionRef.current = window.scrollY;
 
 		setLoading(true);
 		try {
-			const params = new URLSearchParams();
-			if (searchParams.tags) params.set("tags", searchParams.tags);
-			if (searchParams.query) params.set("query", searchParams.query);
-			if (searchParams.sortBy) params.set("sortBy", searchParams.sortBy);
-			params.set("offset", offset.toString());
+			// Preparar los parámetros para la acción del servidor
+			const tags = searchParams.tags?.split(",").filter(Boolean) || [];
 
-			const response = await fetch(`/api/commits?${params.toString()}`);
-			const data = await response.json();
+			// Llamar a la acción del servidor directamente
+			const data = await loadMoreCommits({
+				tags: tags.length > 0 ? tags : undefined,
+				query: searchParams.query,
+				sortBy: (searchParams.sortBy as "recent" | "popular" | "stars" | "forks") || "recent",
+				offset,
+				limit: 20,
+			});
 
-			if (data.commits.length === 0 && data.forks.length === 0) {
+			if (!data.hasMore) {
 				setHasMore(false);
 			} else {
 				setCommits((prev) => [...prev, ...data.commits]);
@@ -72,13 +83,22 @@ export function InfiniteCommits({ initialCommits, initialForks, user, dict, lang
 			console.error("Error loading more commits:", error);
 		} finally {
 			setLoading(false);
+
+			// Restaurar la posición de desplazamiento después de que se actualice el DOM
+			setTimeout(() => {
+				window.scrollTo({
+					top: scrollPositionRef.current,
+					behavior: "smooth",
+				});
+			}, 0);
 		}
-	};
+	}, [loading, hasMore, searchParams, offset]);
 
 	// Auto-load when scrolling near bottom
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		const handleScroll = () => {
+			// Cargar más contenido cuando el usuario se acerca al final de la página
 			if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 1000) {
 				loadMore();
 			}
@@ -86,7 +106,7 @@ export function InfiniteCommits({ initialCommits, initialForks, user, dict, lang
 
 		window.addEventListener("scroll", handleScroll);
 		return () => window.removeEventListener("scroll", handleScroll);
-	}, [loading, hasMore, offset]);
+	}, [loading, hasMore, offset, searchParams]); // Incluir searchParams como dependencia
 
 	if (allPosts.length === 0) {
 		return (
@@ -130,16 +150,22 @@ export function InfiniteCommits({ initialCommits, initialForks, user, dict, lang
 			{/* Load More Button */}
 			{hasMore && (
 				<div className="flex justify-center py-8">
-					<Button className="flex items-center gap-2 bg-transparent" disabled={loading} onClick={loadMore} variant="outline">
+					<Button
+						aria-label={dict.components.infiniteCommits.loadMore}
+						className="flex items-center gap-2 bg-transparent"
+						disabled={loading}
+						onClick={loadMore}
+						variant="outline"
+					>
 						{loading ? (
 							<>
 								<Loader2 className="h-4 w-4 animate-spin" />
-								Cargando más commits...
+								{dict.components.infiniteCommits.loading}
 							</>
 						) : (
 							<>
 								<Code className="h-4 w-4" />
-								Cargar más commits
+								{dict.components.infiniteCommits.loadMore}
 							</>
 						)}
 					</Button>
@@ -152,7 +178,7 @@ export function InfiniteCommits({ initialCommits, initialForks, user, dict, lang
 						<p className="text-slate-400">$ git log --oneline | wc -l</p>
 						<p className="text-green-400">{allPosts.length}</p>
 					</div>
-					<p>Has visto todos los commits disponibles</p>
+					<p>{dict.components.infiniteCommits.allCommitsLoaded}</p>
 				</div>
 			)}
 		</div>
