@@ -152,7 +152,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: Loc
 								{trendingTags.map((tag) => (
 									<Link
 										className="flex items-center justify-between rounded-md p-2 transition-colors hover:bg-muted/50"
-										href={`/commits?tags=${tag.name}`}
+										href={`/${lang}/commits?tags=${tag.name}`}
 										key={tag.id}
 									>
 										<Badge
@@ -177,7 +177,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: Loc
 								{activeUsers.map((activeUser) => (
 									<Link
 										className="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-muted/50"
-										href={`/dev/${activeUser.id}`}
+										href={`/${lang}/dev/${activeUser.id}`}
 										key={activeUser.id}
 									>
 										<div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-500 font-semibold text-sm text-white">

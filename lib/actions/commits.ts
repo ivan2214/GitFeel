@@ -8,6 +8,7 @@ import type { Prisma } from "@/app/generated/prisma";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import type { CommitWithDetails, CreateCommitState, CreateForkState, ForkWithDetails, ToggleStarState, ToggleStashState } from "@/lib/types";
+import type { Locale } from "../dictionaries";
 import { createNotification } from "./notifications"; // Import notification action
 
 const google = createGoogleGenerativeAI({
@@ -117,7 +118,7 @@ export async function suggestTags(content: string): Promise<string[]> {
 	}
 }
 
-export async function toggleStar(_prevState: ToggleStarState, commitId: string): Promise<ToggleStarState> {
+export async function toggleStar(_prevState: ToggleStarState, { commitId, lang }: { commitId: string; lang: Locale }): Promise<ToggleStarState> {
 	try {
 		const session = await auth.api.getSession({
 			headers: await headers(),
@@ -172,7 +173,7 @@ export async function toggleStar(_prevState: ToggleStarState, commitId: string):
 					recipientId: commitAuthorId,
 					type: "COMMIT_STAR",
 					message: `${session.user.name} le dio star a tu commit: "${star?.commit.content.slice(0, 50) || (await prisma.commit.findUnique({ where: { id: commitId }, select: { content: true } }))?.content.slice(0, 50)}..."`,
-					link: `/commits/${commitId}`,
+					link: `/${lang}/commits/${commitId}`,
 				});
 			}
 		}
@@ -239,10 +240,12 @@ export async function createFork(
 		commitId,
 		content,
 		tagNames,
+		lang,
 	}: {
 		commitId: string;
 		content?: string;
 		tagNames?: string[];
+		lang: Locale;
 	},
 ): Promise<CreateForkState> {
 	try {
@@ -314,7 +317,7 @@ export async function createFork(
 				recipientId: fork.commit.authorId,
 				type: "COMMIT_FORK",
 				message: `${session.user.name} forkeó tu commit: "${fork.commit.content.slice(0, 50)}..."`,
-				link: `/commits/${commitId}`,
+				link: `/${lang}/commits/${commitId}`,
 			});
 		}
 

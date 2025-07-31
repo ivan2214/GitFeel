@@ -56,7 +56,7 @@ export function Navbar({ user, initialUnreadCount, dict, lang }: NavbarProps) {
 			<div className="container mx-auto px-4">
 				<div className="flex h-16 items-center justify-between">
 					{/* Logo */}
-					<Link className="flex items-center gap-3" href="/">
+					<Link className="flex items-center gap-3" href={`/${lang}`}>
 						<div className="relative">
 							<div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 opacity-75 blur"></div>
 							<div className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600">

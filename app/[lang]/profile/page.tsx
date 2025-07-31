@@ -17,7 +17,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ lang: 
 	const user = await getCurrentUser();
 
 	if (!user) {
-		redirect("/auth/signin");
+		redirect(`/${lang}/auth/signin`);
 	}
 
 	return (
@@ -172,7 +172,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ lang: 
 								{/* Actions */}
 								<div className="flex justify-end gap-3 border-border border-t pt-4">
 									<Button asChild variant="outline">
-										<Link href={`/dev/${user.id}`}>{dict.pages.profile.cancel}</Link>
+										<Link href={`/${lang}/dev/${user.id}`}>{dict.pages.profile.cancel}</Link>
 									</Button>
 									<Button className="gitfeel-button flex items-center gap-2" type="submit">
 										<Save className="h-4 w-4" />

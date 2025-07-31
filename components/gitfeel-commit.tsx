@@ -258,7 +258,7 @@ export function GitfeelCommit({
 												disabled={starPending || !user}
 												onClick={() => {
 													startTransition(() => {
-														executeStar(commit.id);
+														executeStar({ commitId: commit.id, lang });
 													});
 												}}
 												size="sm"
@@ -382,6 +382,7 @@ export function GitfeelCommit({
 																			commitId: commit.id,
 																			content: forkDialogContent,
 																			tagNames: forkSelectedTags,
+																			lang,
 																		});
 																	});
 																}}

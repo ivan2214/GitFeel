@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { createPatch } from "@/lib/actions/patches";
+import type { Locale } from "@/lib/dictionaries";
 
 /**
  * Interfaz para las propiedades del componente PatchForm
@@ -18,6 +19,7 @@ interface PatchFormProps {
 		name: string | null;
 		image: string | null;
 	};
+	lang: Locale;
 }
 
 /**
@@ -28,11 +30,11 @@ interface PatchFormProps {
  * @param user - Información del usuario actual
  * @returns Formulario para crear patches
  */
-export function PatchForm({ commitId, user }: PatchFormProps) {
+export function PatchForm({ commitId, user, lang }: PatchFormProps) {
 	return (
 		<form
 			action={async (formData) => {
-				await createPatch(formData);
+				await createPatch(formData, lang);
 			}}
 			className="space-y-4"
 		>

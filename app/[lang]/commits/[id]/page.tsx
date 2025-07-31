@@ -117,7 +117,7 @@ export default async function CommitDetailPage({ params }: CommitDetailPageProps
 									action={async (formData) => {
 										"use server";
 										startTransition(async () => {
-											await createPatch(formData);
+											await createPatch(formData, lang);
 										});
 									}}
 									className="space-y-4"
@@ -198,7 +198,7 @@ export default async function CommitDetailPage({ params }: CommitDetailPageProps
 										</div>
 										<div className="commit-content">
 											<div className="flex gap-3">
-												<Link href={`/dev/${patch.author.id}`}>
+												<Link href={`/${lang}/dev/${patch.author.id}`}>
 													<Avatar className="h-8 w-8 ring-2 ring-primary/10">
 														<AvatarImage src={patch.author.image || ""} />
 														<AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
@@ -210,7 +210,7 @@ export default async function CommitDetailPage({ params }: CommitDetailPageProps
 													<div className="mb-2 flex items-center gap-2">
 														<Link
 															className="font-medium transition-colors hover:text-primary"
-															href={`/dev/${patch.author.id}`}
+															href={`/${lang}/dev/${patch.author.id}`}
 														>
 															{patch.author.name}
 														</Link>

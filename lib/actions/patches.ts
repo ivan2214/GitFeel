@@ -5,9 +5,10 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import type { CreatePatchState } from "@/lib/types";
+import type { Locale } from "../dictionaries";
 import { createNotification } from "./notifications"; // Import notification action
 
-export async function createPatch(formData: FormData): Promise<CreatePatchState> {
+export async function createPatch(formData: FormData, lang: Locale): Promise<CreatePatchState> {
 	try {
 		const session = await auth.api.getSession({
 			headers: await headers(),
@@ -51,11 +52,11 @@ export async function createPatch(formData: FormData): Promise<CreatePatchState>
 				recipientId: patch.commit.authorId,
 				type: "COMMIT_PATCH",
 				message: `${session.user.name} comentó en tu commit: "${patch.commit.content.slice(0, 50)}..."`,
-				link: `/commits/${commitId}`,
+				link: `/${lang}/commits/${commitId}`,
 			});
 		}
 
-		revalidatePath(`/commits/${commitId}`);
+		revalidatePath(`/${lang}/commits/${commitId}`);
 
 		return { successMessage: "Patch creado exitosamente" };
 	} catch (error) {
