@@ -1,6 +1,6 @@
 "use client";
 
-import { Code2, Globe, Home, LogOut, Menu, Search, Settings, User } from "lucide-react";
+import { Code2, Home, LogOut, Menu, Search, Settings, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -43,10 +43,6 @@ export function Navbar({ user, initialUnreadCount, dict, lang }: NavbarProps) {
 	];
 
 	// Función para cambiar idioma
-	const changeLanguage = (newLang: Locale) => {
-		const currentPath = pathname.replace(`/${lang}`, "");
-		router.push(`/${newLang}${currentPath}`);
-	};
 
 	const handleSignOut = async () => {
 		await signOut();
