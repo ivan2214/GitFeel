@@ -11,12 +11,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { getCurrentUser } from "@/data/user";
 import { toggleFollow } from "@/lib/actions/users";
+import { getDictionary, type Locale } from "@/lib/dictionaries";
 import prisma from "@/lib/prisma";
 import type { CommitWithDetails, ForkWithDetails } from "@/lib/types";
 
 interface DevProfilePageProps {
 	params: Promise<{
 		id: string;
+		lang: Locale;
 	}>;
 }
 
@@ -98,9 +100,11 @@ export async function generateMetadata({ params }: DevProfilePageProps) {
 }
 
 export default async function DevProfilePage({ params }: DevProfilePageProps) {
+	const { id, lang } = await params;
+	const dict = await getDictionary(lang);
 	const currentUser = await getCurrentUser();
 
-	const user = await getUser((await params).id);
+	const user = await getUser(id);
 
 	if (!user) {
 		notFound();
@@ -108,7 +112,7 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 
 	const forks = await prisma.fork.findMany({
 		where: {
-			userId: (await params).id,
+			userId: id,
 		},
 		include: {
 			user: true,
@@ -128,6 +132,11 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 							forks: true,
 						},
 					},
+				},
+			},
+			tags: {
+				include: {
+					tag: true,
 				},
 			},
 		},
@@ -315,15 +324,17 @@ export default async function DevProfilePage({ params }: DevProfilePageProps) {
 							{allPosts.map((post, index) => (
 								<div key={`${post.type}-${post.data.id}-${index}`}>
 									{post.type === "commit" ? (
-										<GitfeelCommit commit={post.data as CommitWithDetails} user={user} />
+										<GitfeelCommit commit={post.data as CommitWithDetails} dict={dict} lang={lang} user={currentUser} />
 									) : (
 										<GitfeelCommit
 											commit={(post.data as ForkWithDetails).commit}
+											dict={dict}
 											forkContent={(post.data as ForkWithDetails).content}
 											forkDate={new Date(post.data.createdAt)}
 											forkUser={(post.data as ForkWithDetails).user}
 											isFork={true}
-											user={user}
+											lang={lang}
+											user={currentUser}
 										/>
 									)}
 								</div>

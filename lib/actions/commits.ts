@@ -7,7 +7,7 @@ import { headers } from "next/headers";
 import type { Prisma } from "@/app/generated/prisma";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import type { CommitWithDetails, CreateCommitState, CreateForkState, Fork, ToggleStarState, ToggleStashState } from "@/lib/types";
+import type { CommitWithDetails, CreateCommitState, CreateForkState, ForkWithDetails, ToggleStarState, ToggleStashState } from "@/lib/types";
 import { createNotification } from "./notifications"; // Import notification action
 
 const google = createGoogleGenerativeAI({
@@ -312,29 +312,7 @@ export async function getCommitsWithForks(options: {
 	offset?: number;
 }): Promise<{
 	commits: CommitWithDetails[];
-	forks: Fork<{
-		include: {
-			user: true;
-			commit: {
-				include: {
-					author: true;
-					tags: {
-						include: {
-							tag: true;
-						};
-					};
-					_count: {
-						select: {
-							patches: true;
-							stars: true;
-							stashes: true;
-							forks: true;
-						};
-					};
-				};
-			};
-		};
-	}>[];
+	forks: ForkWithDetails[];
 }> {
 	const { tags, query, sortBy = "recent", limit = 20, offset = 0 } = options;
 
@@ -475,6 +453,11 @@ export async function getCommitsWithForks(options: {
 							forks: true,
 						},
 					},
+				},
+			},
+			tags: {
+				include: {
+					tag: true,
 				},
 			},
 		},

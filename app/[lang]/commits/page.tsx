@@ -4,9 +4,11 @@ import { InfiniteCommits } from "@/components/infinite-commits";
 import { Card, CardContent } from "@/components/ui/card";
 import { getCurrentUser } from "@/data/user";
 import { getCommitsWithForks } from "@/lib/actions/commits";
+import { getDictionary, type Locale } from "@/lib/dictionaries";
 import prisma from "@/lib/prisma";
 
 interface CommitsPageProps {
+	params: Promise<{ lang: Locale }>;
 	searchParams: Promise<{
 		tags?: string;
 		query?: string;
@@ -32,7 +34,9 @@ async function getAllTags() {
 	});
 }
 
-export default async function CommitsPage({ searchParams }: CommitsPageProps) {
+export default async function CommitsPage({ params, searchParams }: CommitsPageProps) {
+	const { lang } = await params;
+	const dict = await getDictionary(lang);
 	const user = await getCurrentUser();
 
 	const tags = (await searchParams).tags?.split(",").filter(Boolean) || [];
@@ -49,13 +53,13 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 	const getSortLabel = (sortBy: string) => {
 		switch (sortBy) {
 			case "popular":
-				return "Más populares";
+				return dict.search.filters.popular;
 			case "stars":
-				return "Más estrellas";
+				return dict.search.filters.stars;
 			case "forks":
-				return "Más forks";
+				return dict.search.filters.forks;
 			default:
-				return "Más recientes";
+				return dict.search.filters.recent;
 		}
 	};
 
@@ -76,18 +80,18 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 						<Card className="commit-card">
 							<div className="commit-header">
 								<Code className="h-3 w-3" />
-								<span>explorar commits</span>
+								<span>{dict.pages.commits.explore}</span>
 								<span className="ml-auto flex items-center gap-1">
 									<TrendingUp className="h-3 w-3" />
 									{getSortLabel((await searchParams).sortBy || "recent")}
 								</span>
 							</div>
 							<CardContent className="p-4">
-								<h1 className="mb-2 font-bold text-2xl">Explorar Sentimientos de Developers</h1>
+								<h1 className="mb-2 font-bold text-2xl">{dict.pages.commits.title}</h1>
 								<p className="text-muted-foreground">
 									{(await searchParams).tags || (await searchParams).query
-										? `${totalResults} resultados encontrados`
-										: `Descubre lo que piensan y sienten los developers de todo el mundo`}
+										? `${totalResults} ${dict.pages.commits.resultsFound}`
+										: dict.pages.commits.description}
 								</p>
 
 								{/* Active Filters Summary */}
@@ -96,12 +100,12 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 										<div className="space-y-1 text-sm">
 											{(await searchParams).query && (
 												<p>
-													<span className="font-medium">Búsqueda:</span> "{(await searchParams).query}"
+													<span className="font-medium">{dict.pages.commits.search}:</span> "{(await searchParams).query}"
 												</p>
 											)}
 											{(await searchParams).tags && (
 												<p>
-													<span className="font-medium">Tags:</span>{" "}
+													<span className="font-medium">{dict.pages.commits.tags}:</span>{" "}
 													{((await searchParams).tags || "")
 														.split(",")
 														.map((tag) => `#${tag}`)
@@ -110,7 +114,7 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 											)}
 											{(await searchParams).sortBy && (await searchParams).sortBy !== "recent" && (
 												<p>
-													<span className="font-medium">Orden:</span>{" "}
+													<span className="font-medium">{dict.pages.commits.order}:</span>{" "}
 													{getSortLabel((await searchParams).sortBy || "recent")}
 												</p>
 											)}
@@ -121,7 +125,14 @@ export default async function CommitsPage({ searchParams }: CommitsPageProps) {
 						</Card>
 
 						{/* Commits Feed with Infinite Scroll */}
-						<InfiniteCommits initialCommits={commits} initialForks={forks} searchParams={await searchParams} user={user} />
+						<InfiniteCommits
+							dict={dict}
+							initialCommits={commits}
+							initialForks={forks}
+							lang={lang}
+							searchParams={await searchParams}
+							user={user}
+						/>
 					</div>
 				</div>
 			</div>

@@ -186,8 +186,9 @@ model Fork {
   content   String? // Optional additional content when forking
   createdAt DateTime @default(now())
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  commit Commit @relation(fields: [commitId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commit Commit    @relation(fields: [commitId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  tags   ForkTag[] // New field for tags on the fork itself
 
   @@unique([userId, commitId])
   @@index([commitId])
@@ -213,6 +214,7 @@ model Tag {
   name    String      @unique
   color   String      @default("#3b82f6")
   commits CommitTag[]
+  forks   ForkTag[]
 
   @@map("tags")
 }
@@ -257,4 +259,17 @@ model Notification {
 
   @@index([userId, createdAt])
   @@map("notifications")
+}
+
+model ForkTag {
+  id     String @id @default(cuid())
+  forkId String
+  tagId  String
+
+  fork Fork @relation(fields: [forkId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([forkId, tagId])
+  @@index([tagId])
+  @@map("fork_tags")
 }

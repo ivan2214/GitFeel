@@ -1,7 +1,7 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { es } from "date-fns/locale";
+import { enUS, es } from "date-fns/locale";
 import { Archive, Calendar, Code, GitFork, MessageCircle, MoreHorizontal, Repeat2, Star } from "lucide-react";
 import Link from "next/link";
 import { startTransition, useState } from "react";
@@ -13,12 +13,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Textarea } from "@/components/ui/textarea";
 import { useAction } from "@/hooks/use-action";
 import { createFork, toggleStar, toggleStash } from "@/lib/actions/commits";
+import type { Dictionary, Locale } from "@/lib/dictionaries";
 import type { CommitWithDetails, User } from "@/lib/types";
 import { ImageWithSkeleton } from "./image-with-skeleton";
 
 interface GitfeelCommitProps {
 	commit: CommitWithDetails;
 	user: User | null;
+	dict: Dictionary;
+	lang: Locale;
 	showActions?: boolean;
 	isFork?: boolean;
 	forkUser?: User | null;
@@ -26,7 +29,7 @@ interface GitfeelCommitProps {
 	forkDate?: Date;
 }
 
-export function GitfeelCommit({ commit, user, showActions = true, isFork = false, forkUser, forkContent, forkDate }: GitfeelCommitProps) {
+export function GitfeelCommit({ commit, user, dict, lang, showActions = true, isFork = false, forkUser, forkContent, forkDate }: GitfeelCommitProps) {
 	const [forkDialogContent, setForkDialogContent] = useState("");
 	const [showForkDialog, setShowForkDialog] = useState(false);
 
@@ -73,14 +76,14 @@ export function GitfeelCommit({ commit, user, showActions = true, isFork = false
 						<Link className="transition-colors hover:text-primary" href={`/dev/${forkUser.id}`}>
 							{forkUser.name}
 						</Link>
-						<span>forkeó esto</span>
-						{forkDate && <span>· {formatDistanceToNow(forkDate, { addSuffix: true, locale: es })}</span>}
+						<span>{dict.components.gitfeelCommit.forkedThis}</span>
+						{forkDate && <span>· {formatDistanceToNow(forkDate, { addSuffix: true, locale: lang === "es" ? es : enUS })}</span>}
 					</div>
 					<article className="commit-content flex w-full flex-col items-start gap-3">
 						<div className="commit-card flex w-full flex-col items-start">
 							<div className="commit-header">
 								<Code className="h-3 w-3" />
-								<span>fork comment</span>
+								<span>{dict.components.gitfeelCommit.forkComment}</span>
 							</div>
 							<div className="commit-content w-full">
 								<div className="code-block w-full">
@@ -128,22 +131,24 @@ export function GitfeelCommit({ commit, user, showActions = true, isFork = false
 												</DialogTrigger>
 												<DialogContent>
 													<DialogHeader>
-														<DialogTitle>Forkear este commit</DialogTitle>
+														<DialogTitle>{dict.components.gitfeelCommit.forkThisCommit}</DialogTitle>
 													</DialogHeader>
 													<div className="space-y-4">
 														<div className="code-block">
-															<p className="mb-2 text-muted-foreground text-sm">Commit original:</p>
+															<p className="mb-2 text-muted-foreground text-sm">
+																{dict.components.gitfeelCommit.originalCommit}
+															</p>
 															<p className="text-slate-100">"{commit.content}"</p>
 														</div>
 														<Textarea
 															maxLength={280}
 															onChange={(e) => setForkDialogContent(e.target.value)}
-															placeholder="Agrega tu comentario al fork (opcional)"
+															placeholder={dict.components.gitfeelCommit.forkCommentPlaceholder}
 															value={forkDialogContent}
 														/>
 														<div className="flex justify-end gap-2">
 															<Button onClick={() => setShowForkDialog(false)} variant="outline">
-																Cancelar
+																{dict.components.gitfeelCommit.cancel}
 															</Button>
 															<Button
 																className="gitfeel-button"
@@ -157,7 +162,9 @@ export function GitfeelCommit({ commit, user, showActions = true, isFork = false
 																	});
 																}}
 															>
-																{forkPending ? "Forkeando..." : "Fork"}
+																{forkPending
+																	? dict.components.gitfeelCommit.forking
+																	: dict.components.gitfeelCommit.fork}
 															</Button>
 														</div>
 													</div>
@@ -189,11 +196,13 @@ export function GitfeelCommit({ commit, user, showActions = true, isFork = false
 													</Button>
 												</DropdownMenuTrigger>
 												<DropdownMenuContent align="end">
-													<DropdownMenuItem>Reportar commit</DropdownMenuItem>
+													<DropdownMenuItem>{dict.components.gitfeelCommit.reportCommit}</DropdownMenuItem>
 													{user.id === commit.authorId && (
 														<>
-															<DropdownMenuItem>Editar commit</DropdownMenuItem>
-															<DropdownMenuItem className="text-red-600">Eliminar commit</DropdownMenuItem>
+															<DropdownMenuItem>{dict.components.gitfeelCommit.editCommit}</DropdownMenuItem>
+															<DropdownMenuItem className="text-red-600">
+																{dict.components.gitfeelCommit.deleteCommit}
+															</DropdownMenuItem>
 														</>
 													)}
 												</DropdownMenuContent>
@@ -208,12 +217,14 @@ export function GitfeelCommit({ commit, user, showActions = true, isFork = false
 							{/* Commit Header */}
 							<div className="commit-header">
 								<Code className="h-3 w-3" />
-								<span>commit por {commit.author?.username || commit.author.name}</span>
+								<span>
+									{dict.components.gitfeelCommit.commitBy} {commit.author?.username || commit.author.name}
+								</span>
 								<span className="ml-auto flex items-center gap-1">
 									<Calendar className="h-3 w-3" />
 									{formatDistanceToNow(new Date(commit.createdAt), {
 										addSuffix: true,
-										locale: es,
+										locale: lang === "es" ? es : enUS,
 									})}
 								</span>
 							</div>
@@ -253,7 +264,7 @@ export function GitfeelCommit({ commit, user, showActions = true, isFork = false
 										{commit.imageUrl && (
 											<Link className="block" href={`/commits/${commit.id}`}>
 												<ImageWithSkeleton
-													alt="Adjunto del commit"
+													alt={dict.components.gitfeelCommit.commitAttachment}
 													className="h-auto max-w-full rounded-lg border border-border transition-opacity hover:opacity-90"
 													src={commit.imageUrl || "/placeholder.svg"}
 												/>

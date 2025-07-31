@@ -5,12 +5,15 @@ import { useEffect, useState } from "react";
 import { GitfeelCommit } from "@/components/gitfeel-commit";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import type { Dictionary, Locale } from "@/lib/dictionaries";
 import type { CommitWithDetails, User } from "@/lib/types";
 
 interface InfiniteCommitsProps {
 	initialCommits: CommitWithDetails[];
 	initialForks: any[];
 	user: User | null;
+	dict: Dictionary;
+	lang: Locale;
 	searchParams: {
 		tags?: string;
 		query?: string;
@@ -18,7 +21,7 @@ interface InfiniteCommitsProps {
 	};
 }
 
-export function InfiniteCommits({ initialCommits, initialForks, user, searchParams }: InfiniteCommitsProps) {
+export function InfiniteCommits({ initialCommits, initialForks, user, dict, lang, searchParams }: InfiniteCommitsProps) {
 	const [commits, setCommits] = useState(initialCommits);
 	const [forks, setForks] = useState(initialForks);
 	const [loading, setLoading] = useState(false);
@@ -94,14 +97,16 @@ export function InfiniteCommits({ initialCommits, initialForks, user, searchPara
 			{allPosts.map((post, index) => (
 				<div key={`${post.type}-${post.data.id}-${index}`}>
 					{post.type === "commit" ? (
-						<GitfeelCommit commit={post.data} user={user} />
+						<GitfeelCommit commit={post.data} dict={dict} lang={lang} user={user} />
 					) : (
 						<GitfeelCommit
 							commit={post.data.commit}
+							dict={dict}
 							forkContent={post.data.content}
 							forkDate={new Date(post.data.createdAt)}
 							forkUser={post.data.user}
 							isFork={true}
+							lang={lang}
 							user={user}
 						/>
 					)}

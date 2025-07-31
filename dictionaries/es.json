@@ -1,0 +1,236 @@
+{
+	"common": {
+		"loading": "Cargando...",
+		"error": "Error",
+		"success": "Éxito",
+		"cancel": "Cancelar",
+		"save": "Guardar",
+		"delete": "Eliminar",
+		"edit": "Editar",
+		"close": "Cerrar",
+		"back": "Volver",
+		"next": "Siguiente",
+		"previous": "Anterior",
+		"search": "Buscar",
+		"filter": "Filtrar",
+		"sort": "Ordenar",
+		"share": "Compartir",
+		"copy": "Copiar",
+		"copied": "Copiado",
+		"view": "Ver",
+		"download": "Descargar",
+		"upload": "Subir",
+		"submit": "Enviar",
+		"confirm": "Confirmar",
+		"yes": "Sí",
+		"no": "No"
+	},
+	"navigation": {
+		"home": "Inicio",
+		"profile": "Perfil",
+		"commits": "Commits",
+		"notifications": "Notificaciones",
+		"settings": "Configuración",
+		"logout": "Cerrar sesión",
+		"login": "Iniciar sesión",
+		"register": "Registrarse"
+	},
+	"auth": {
+		"login": {
+			"title": "Iniciar sesión",
+			"subtitle": "Ingresa a tu cuenta",
+			"email": "Correo electrónico",
+			"password": "Contraseña",
+			"forgotPassword": "¿Olvidaste tu contraseña?",
+			"noAccount": "¿No tienes cuenta?",
+			"signUp": "Regístrate",
+			"button": "Iniciar sesión"
+		},
+		"register": {
+			"title": "Crear cuenta",
+			"subtitle": "Únete a la comunidad de developers",
+			"name": "Nombre completo",
+			"username": "Nombre de usuario",
+			"email": "Correo electrónico",
+			"password": "Contraseña",
+			"confirmPassword": "Confirmar contraseña",
+			"hasAccount": "¿Ya tienes cuenta?",
+			"signIn": "Inicia sesión",
+			"button": "Crear cuenta"
+		}
+	},
+	"commits": {
+		"title": "Commits Emocionales",
+		"subtitle": "Comparte tus experiencias de desarrollo",
+		"create": "Crear commit",
+		"placeholder": "¿Cómo te sientes con tu código hoy?",
+		"mood": {
+			"happy": "Feliz",
+			"frustrated": "Frustrado",
+			"excited": "Emocionado",
+			"confused": "Confundido",
+			"proud": "Orgulloso",
+			"tired": "Cansado"
+		},
+		"actions": {
+			"like": "Me gusta",
+			"comment": "Comentar",
+			"share": "Compartir",
+			"report": "Reportar"
+		},
+		"empty": {
+			"title": "No hay commits aún",
+			"description": "Sé el primero en compartir tu experiencia de desarrollo"
+		}
+	},
+	"profile": {
+		"title": "Perfil",
+		"edit": "Editar perfil",
+		"followers": "Seguidores",
+		"following": "Siguiendo",
+		"commits": "Commits",
+		"joined": "Se unió en",
+		"bio": "Biografía",
+		"location": "Ubicación",
+		"website": "Sitio web",
+		"github": "GitHub",
+		"twitter": "Twitter"
+	},
+	"notifications": {
+		"title": "Notificaciones",
+		"markAllRead": "Marcar todas como leídas",
+		"empty": {
+			"title": "No hay notificaciones",
+			"description": "Te notificaremos cuando algo importante suceda"
+		},
+		"types": {
+			"like": "le gustó tu commit",
+			"comment": "comentó en tu commit",
+			"follow": "comenzó a seguirte",
+			"mention": "te mencionó en un commit"
+		}
+	},
+	"search": {
+		"placeholder": "Buscar commits, usuarios...",
+		"results": "Resultados de búsqueda",
+		"noResults": "No se encontraron resultados",
+		"filters": {
+			"all": "Todo",
+			"commits": "Commits",
+			"users": "Usuarios",
+			"recent": "Reciente",
+			"popular": "Popular",
+			"stars": "Más estrellas",
+			"forks": "Más forks"
+		}
+	},
+	"errors": {
+		"generic": "Algo salió mal. Por favor, inténtalo de nuevo.",
+		"network": "Error de conexión. Verifica tu internet.",
+		"unauthorized": "No tienes permisos para realizar esta acción.",
+		"notFound": "El contenido que buscas no existe.",
+		"validation": "Por favor, verifica los datos ingresados."
+	},
+	"components": {
+		"navbar": {
+			"home": "Inicio",
+			"commits": "Commits",
+			"profile": "Perfil",
+			"signIn": "Iniciar sesión",
+			"signOut": "Cerrar sesión"
+		},
+		"gitfeelComposer": {
+			"authRequired": "autenticación requerida",
+			"authRequiredDescription": "Inicia sesión para compartir tus sentimientos de desarrollador",
+			"newCommit": "nuevo commit",
+			"placeholder": "¿Qué está pasando en tu código? Comparte tus sentimientos de desarrollador...",
+			"uploadPlaceholder": "Sube una imagen para tu commit",
+			"suggestedTags": "Etiquetas sugeridas:",
+			"committing": "Enviando...",
+			"commit": "Commit"
+		},
+		"gitfeelCommit": {
+			"forkedThis": "forkeó esto",
+			"forkComment": "comentario del fork",
+			"commitBy": "commit por",
+			"commitAttachment": "Adjunto del commit",
+			"forkThisCommit": "Forkear este commit",
+			"originalCommit": "Commit original:",
+			"forkCommentPlaceholder": "Agrega tu comentario al fork (opcional)",
+			"cancel": "Cancelar",
+			"fork": "Fork",
+			"forking": "Forkeando...",
+			"reportCommit": "Reportar commit",
+			"editCommit": "Editar commit",
+			"deleteCommit": "Eliminar commit"
+		}
+	},
+	"meta": {
+		"title": "gitfeel - Red social para developers",
+		"description": "La red social donde los developers comparten sus commits emocionales, frustraciones, logros y dudas de programación.",
+		"keywords": "developers, programadores, red social, git, commits, código, programación"
+	},
+	"pages": {
+		"home": {
+			"noCommits": "No hay commits aún. ¡Sé el primero en compartir!",
+			"joinGitfeel": "únete a gitfeel",
+			"joinDescription": "Comparte tus frustraciones, logros y dudas de programación",
+			"signIn": "Iniciar Sesión",
+			"signUp": "Registrarse",
+			"trendingTags": "tags trending",
+			"activeDevelopers": "developers activos"
+		},
+		"commits": {
+			"explore": "explorar commits",
+			"title": "Explorar Sentimientos de Developers",
+			"description": "Descubre lo que piensan y sienten los developers de todo el mundo",
+			"resultsFound": "resultados encontrados",
+			"search": "Búsqueda",
+			"tags": "Tags",
+			"order": "Orden",
+			"backToExplore": "Volver a explorar"
+		},
+		"profile": {
+			"backToProfile": "Back to profile",
+			"profileConfiguration": "profile configuration",
+			"profilePicture": "Profile Picture",
+			"profilePictureSync": "Your profile picture is synced from your authentication provider.",
+			"displayName": "Display Name",
+			"displayNamePlaceholder": "Your display name",
+			"username": "Username",
+			"usernamePlaceholder": "your_username",
+			"usernameCannotChange": "Username cannot be changed",
+			"bioReadme": "Bio (README.md)",
+			"bioPlaceholder": "Tell us about yourself, your stack, favorite bugs...",
+			"bioMaxLength": "Maximum 160 characters",
+			"location": "Location",
+			"locationPlaceholder": "City, Country",
+			"website": "Website",
+			"websitePlaceholder": "https://your-website.com",
+			"github": "GitHub",
+			"githubPlaceholder": "https://github.com/your-username",
+			"twitter": "Twitter",
+			"twitterPlaceholder": "https://twitter.com/your-username",
+			"cancel": "Cancel",
+			"saveChanges": "Save Changes",
+			"profileTips": "profile tips",
+			"proTips": "# Pro tips for your gitfeel profile:",
+			"tipBio": "• Write a bio that shows your personality",
+			"tipGithub": "• Link your GitHub to show your work",
+			"tipLocation": "• Use your location to connect with local devs",
+			"tipWebsite": "• Share your website or portfolio"
+		},
+		"commitDetail": {
+			"addPatch": "agregar patch",
+			"patchPlaceholder": "Comparte tus pensamientos, sugerencias o experiencias...",
+			"sendPatch": "Enviar Patch",
+			"authRequired": "autenticación requerida",
+			"authRequiredDescription": "Inicia sesión para contribuir a esta discusión",
+			"discussionThread": "hilo de discusión",
+			"patches": "patches",
+			"patchBy": "patch #{number} por {username}",
+			"noPatches": "No hay patches aún. ¡Sé el primero en contribuir!",
+			"commitNotFound": "Commit no encontrado"
+		}
+	}
+}

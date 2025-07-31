@@ -11,11 +11,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { getCurrentUser } from "@/data/user";
 import { createPatch } from "@/lib/actions/patches";
+import { getDictionary, type Locale } from "@/lib/dictionaries";
 import prisma from "@/lib/prisma";
 
 interface CommitDetailPageProps {
 	params: Promise<{
 		id: string;
+		lang: Locale;
 	}>;
 }
 
@@ -76,8 +78,10 @@ export async function generateMetadata({ params }: CommitDetailPageProps) {
 }
 
 export default async function CommitDetailPage({ params }: CommitDetailPageProps) {
+	const { id, lang } = await params;
+	const dict = await getDictionary(lang);
 	const user = await getCurrentUser();
-	const commit = await getCommit((await params).id);
+	const commit = await getCommit(id);
 
 	if (!commit) {
 		notFound();
@@ -90,22 +94,22 @@ export default async function CommitDetailPage({ params }: CommitDetailPageProps
 					{/* Navigation */}
 					<div className="flex items-center gap-4">
 						<Button asChild size="sm" variant="ghost">
-							<Link className="flex items-center gap-2" href="/commits">
+							<Link className="flex items-center gap-2" href={`/${lang}/commits`}>
 								<ArrowLeft className="h-4 w-4" />
-								Volver a explorar
+								{dict.pages.commits.backToExplore}
 							</Link>
 						</Button>
 					</div>
 
 					{/* Main Commit */}
-					<GitfeelCommit commit={commit} user={user} />
+					<GitfeelCommit commit={commit} dict={dict} lang={lang} user={user} />
 
 					{/* Add Patch Form - MOVED TO TOP */}
 					{user ? (
 						<Card className="commit-card">
 							<div className="commit-header">
 								<Send className="h-3 w-3" />
-								<span>agregar patch</span>
+								<span>{dict.pages.commitDetail.addPatch}</span>
 								<span className="ml-auto">@{user.username}</span>
 							</div>
 							<CardContent className="p-4">
@@ -135,14 +139,14 @@ export default async function CommitDetailPage({ params }: CommitDetailPageProps
 												<Textarea
 													className="min-h-[80px] resize-none border-blue-500/30 border-l-2 border-none bg-transparent pl-4 font-mono text-slate-100 placeholder:text-slate-500 focus-visible:ring-0"
 													name="content"
-													placeholder="Comparte tus pensamientos, sugerencias o experiencias..."
+													placeholder={dict.pages.commitDetail.patchPlaceholder}
 													required
 												/>
 											</div>
 											<div className="flex justify-end">
 												<Button className="gitfeel-button flex items-center gap-2" size="sm" type="submit">
 													<Send className="h-4 w-4" />
-													Enviar Patch
+													{dict.pages.commitDetail.sendPatch}
 												</Button>
 											</div>
 										</div>
@@ -154,14 +158,14 @@ export default async function CommitDetailPage({ params }: CommitDetailPageProps
 						<Card className="commit-card">
 							<div className="commit-header">
 								<Code className="h-3 w-3" />
-								<span>autenticación requerida</span>
+								<span>{dict.pages.commitDetail.authRequired}</span>
 							</div>
 							<CardContent className="p-8 text-center">
 								<div className="code-block mb-4">
 									<p className="text-slate-400">$ git patch --interactive</p>
 									<p className="text-red-400">error: authentication required</p>
 								</div>
-								<p className="mb-4 text-muted-foreground">Inicia sesión para contribuir a esta discusión</p>
+								<p className="mb-4 text-muted-foreground">{dict.pages.commitDetail.authRequiredDescription}</p>
 							</CardContent>
 						</Card>
 					)}
@@ -170,10 +174,10 @@ export default async function CommitDetailPage({ params }: CommitDetailPageProps
 					<Card className="commit-card">
 						<div className="commit-header">
 							<MessageCircle className="h-3 w-3" />
-							<span>hilo de discusión</span>
+							<span>{dict.pages.commitDetail.discussionThread}</span>
 							<span className="ml-auto flex items-center gap-1">
 								<Users className="h-3 w-3" />
-								{commit._count.patches} patches
+								{commit._count.patches} {dict.pages.commitDetail.patches}
 							</span>
 						</div>
 						<CardContent className="p-6">
@@ -228,7 +232,7 @@ export default async function CommitDetailPage({ params }: CommitDetailPageProps
 											<p className="text-yellow-400">warning: no patches found</p>
 										</div>
 										<MessageCircle className="mx-auto mb-4 h-12 w-12 opacity-50" />
-										<p className="text-muted-foreground">No hay patches aún. ¡Sé el primero en contribuir!</p>
+										<p className="text-muted-foreground">{dict.pages.commitDetail.noPatches}</p>
 									</div>
 								)}
 							</div>
