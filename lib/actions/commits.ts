@@ -514,9 +514,14 @@ export async function loadMoreCommits(options: {
 	forks: ForkWithDetails[];
 	hasMore: boolean;
 }> {
-	const { commits, forks } = await getCommitsWithForks(options);
-	// Determinar si hay más resultados disponibles
-	const hasMore = commits.length > 0 || forks.length > 0;
+	try {
+		const { commits, forks } = await getCommitsWithForks(options);
+		// Determinar si hay más resultados disponibles
+		const hasMore = commits.length > 0 || forks.length > 0;
 
-	return { commits, forks, hasMore };
+		return { commits, forks, hasMore };
+	} catch (error) {
+		console.error("Error loading more commits:", error);
+		return { commits: [], forks: [], hasMore: false };
+	}
 }

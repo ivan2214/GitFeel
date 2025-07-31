@@ -64,7 +64,7 @@ export function NotificationsModal({ initialUnreadCount }: NotificationsModalPro
 
 		const interval = setInterval(() => {
 			fetchNotifications();
-		}, 30000); // Poll every 30 seconds
+		}, 60000); // Poll every 60 seconds
 
 		return () => clearInterval(interval);
 	}, [session?.user, fetchNotifications]);

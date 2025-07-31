@@ -1,7 +1,7 @@
 "use client";
 
 import { Code, Loader2 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 import { GitfeelCommit } from "@/components/gitfeel-commit";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -48,15 +48,9 @@ export function InfiniteCommits({ initialCommits, initialForks, user, dict, lang
 		...forks.map((fork) => ({ type: "fork", data: fork, createdAt: fork.createdAt })),
 	].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-	// Referencia para mantener la posición de desplazamiento
-	const scrollPositionRef = useRef(0);
-
 	// Memorizar la función loadMore para evitar recreaciones innecesarias
 	const loadMore = useCallback(async () => {
 		if (loading || !hasMore) return;
-
-		// Guardar la posición actual de desplazamiento
-		scrollPositionRef.current = window.scrollY;
 
 		setLoading(true);
 		try {
@@ -81,32 +75,42 @@ export function InfiniteCommits({ initialCommits, initialForks, user, dict, lang
 			}
 		} catch (error) {
 			console.error("Error loading more commits:", error);
+			setHasMore(false);
+			setLoading(false);
 		} finally {
 			setLoading(false);
-
-			// Restaurar la posición de desplazamiento después de que se actualice el DOM
-			setTimeout(() => {
-				window.scrollTo({
-					top: scrollPositionRef.current,
-					behavior: "smooth",
-				});
-			}, 0);
 		}
 	}, [loading, hasMore, searchParams, offset]);
 
-	// Auto-load when scrolling near bottom
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	// Referencia para el elemento observador
+	const observerRef = useRef<HTMLDivElement>(null);
+
+	// Configurar Intersection Observer para scroll infinito
 	useEffect(() => {
-		const handleScroll = () => {
-			// Cargar más contenido cuando el usuario se acerca al final de la página
-			if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 1000) {
-				loadMore();
+		const observer = new IntersectionObserver(
+			(entries) => {
+				const [entry] = entries;
+				if (entry.isIntersecting && hasMore && !loading) {
+					loadMore();
+				}
+			},
+			{
+				// Activar cuando el elemento esté 200px antes de ser visible
+				rootMargin: "200px",
+				threshold: 0.1,
+			},
+		);
+
+		if (observerRef.current) {
+			observer.observe(observerRef.current);
+		}
+
+		return () => {
+			if (observerRef.current) {
+				observer.unobserve(observerRef.current);
 			}
 		};
-
-		window.addEventListener("scroll", handleScroll);
-		return () => window.removeEventListener("scroll", handleScroll);
-	}, [loading, hasMore, offset, searchParams]); // Incluir searchParams como dependencia
+	}, [loadMore, hasMore, loading]);
 
 	if (allPosts.length === 0) {
 		return (
@@ -147,28 +151,29 @@ export function InfiniteCommits({ initialCommits, initialForks, user, dict, lang
 				</div>
 			))}
 
-			{/* Load More Button */}
+			{/* Elemento observador para scroll infinito */}
 			{hasMore && (
-				<div className="flex justify-center py-8">
-					<Button
-						aria-label={dict.components.infiniteCommits.loadMore}
-						className="flex items-center gap-2 bg-transparent"
-						disabled={loading}
-						onClick={loadMore}
-						variant="outline"
-					>
-						{loading ? (
-							<>
-								<Loader2 className="h-4 w-4 animate-spin" />
-								{dict.components.infiniteCommits.loading}
-							</>
-						) : (
-							<>
-								<Code className="h-4 w-4" />
-								{dict.components.infiniteCommits.loadMore}
-							</>
-						)}
-					</Button>
+				<div className="flex flex-col items-center gap-4 py-8" ref={observerRef}>
+					{loading ? (
+						<div className="flex items-center gap-2 text-muted-foreground">
+							<Loader2 className="h-4 w-4 animate-spin" />
+							{dict.components.infiniteCommits.loading}
+						</div>
+					) : (
+						<Button
+							aria-label={dict.components.infiniteCommits.loadMore}
+							className="flex items-center gap-2"
+							onClick={() => {
+								startTransition(() => {
+									loadMore();
+								});
+							}}
+							variant="outline"
+						>
+							<Code className="h-4 w-4" />
+							{dict.components.infiniteCommits.loadMore}
+						</Button>
+					)}
 				</div>
 			)}
 
